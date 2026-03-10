@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --water-blue: 203 74% 22%;
+    --river-teal: 170 67% 35%;
+    --fishing-orange: 27 86% 68%;
+    --fresh-aqua: 173 65% 47%;
+    --sunset-coral: 16 100% 66%;
+    --bg-light: 210 17% 98%;
+    --surface-white: 0 0% 100%;
+    --text-dark: 210 24% 16%;
+
+    --background: 210 17% 98%;
+    --foreground: 210 24% 16%;
+    --card: 0 0% 100%;
+    --card-foreground: 210 24% 16%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 24% 16%;
+    --primary: 203 74% 22%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 170 67% 35%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 210 17% 95%;
+    --muted-foreground: 210 10% 45%;
+    --accent: 27 86% 68%;
+    --accent-foreground: 210 24% 16%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 210 17% 90%;
+    --input: 210 17% 90%;
+    --ring: 203 74% 22%;
+    --radius: 1rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .gradient-water {
+    background: linear-gradient(135deg, hsl(var(--water-blue)) 0%, hsl(var(--river-teal)) 100%);
+  }
+
+  .gradient-sunset {
+    background: linear-gradient(135deg, hsl(var(--fishing-orange)) 0%, hsl(var(--sunset-coral)) 100%);
+  }
+
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .mobile-nav-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
