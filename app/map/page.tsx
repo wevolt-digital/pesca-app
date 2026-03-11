@@ -1,7 +1,7 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import maplibregl from 'maplibre-gl';
 import FloatingMapControls from '@/components/FloatingMapControls';
 import MapDetailCard from '@/components/MapDetailCard';
 import FilterChips, { FilterChip } from '@/components/FilterChips';
@@ -9,16 +9,9 @@ import { fishingSpots, catches } from '@/constants/mockData';
 import { FishingSpot, Catch } from '@/types';
 import { motion } from 'framer-motion';
 import { MapPin } from 'lucide-react';
+import { MAP_STYLE } from '@/lib/mapStyle';
 
-const containerStyle = {
-  width: '100%',
-  height: '100%',
-};
-
-const defaultCenter = {
-  lat: -15.7975,
-  lng: -47.8919,
-};
+const defaultCenter: [number, number] = [-47.8919, -15.7975];
 
 const filterChips: FilterChip[] = [
   { id: 'all', label: 'Todos' },
@@ -28,40 +21,120 @@ const filterChips: FilterChip[] = [
   { id: 'reservoir', label: 'Represas' },
 ];
 
-const spotSvgIcon =
-  'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%230A3D62"%3E%3Ccircle cx="12" cy="12" r="10" fill="%230A3D62" stroke="white" stroke-width="2"/%3E%3C/svg%3E';
-
-const catchSvgIcon =
-  'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23F4A261"%3E%3Ccircle cx="12" cy="12" r="8" fill="%23F4A261" stroke="white" stroke-width="2"/%3E%3C/svg%3E';
-
 type SelectedMarker = {
   data: FishingSpot | Catch;
   type: 'spot' | 'catch';
 };
 
+function createMarkerElement(color: string, size = 18) {
+  const el = document.createElement('div');
+  el.style.width = `${size}px`;
+  el.style.height = `${size}px`;
+  el.style.borderRadius = '9999px';
+  el.style.background = color;
+  el.style.border = '2px solid white';
+  el.style.boxShadow = '0 4px 10px rgba(0,0,0,0.25)';
+  el.style.cursor = 'pointer';
+  return el;
+}
+
 export default function MapPage() {
-  const mapRef = useRef<google.maps.Map | null>(null);
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<maplibregl.Map | null>(null);
+  const markersRef = useRef<maplibregl.Marker[]>([]);
 
   const [selectedFilter, setSelectedFilter] = useState<string[]>(['all']);
   const [selectedMarker, setSelectedMarker] = useState<SelectedMarker | null>(null);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [mapLoaded, setMapLoaded] = useState(false);
 
   const filteredSpots = useMemo(() => {
     if (selectedFilter.includes('all')) return fishingSpots;
     return fishingSpots.filter((spot) => selectedFilter.includes(spot.type));
   }, [selectedFilter]);
 
-  // Capturas permanecem visíveis independentemente do filtro de tipo do local,
-  // já que o tipo "Catch" atualmente não possui a propriedade "type".
-  const filteredCatches = useMemo(() => {
-    return catches;
+  const filteredCatches = useMemo(() => catches, []);
+
+  useEffect(() => {
+    if (!mapContainerRef.current || mapRef.current) return;
+
+    const map = new maplibregl.Map({
+      container: mapContainerRef.current,
+      style: MAP_STYLE,
+      center: defaultCenter,
+      zoom: 5,
+      attributionControl: false,
+    });
+
+    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
+
+    map.on('load', () => {
+      setMapLoaded(true);
+    });
+
+    mapRef.current = map;
+
+    return () => {
+      markersRef.current.forEach((marker) => marker.remove());
+      markersRef.current = [];
+      map.remove();
+      mapRef.current = null;
+    };
   }, []);
+
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+
+    markersRef.current.forEach((marker) => marker.remove());
+    markersRef.current = [];
+
+    const nextMarkers: maplibregl.Marker[] = [];
+
+    filteredSpots.forEach((spot) => {
+      const el = createMarkerElement('#0A3D62', 18);
+
+      el.addEventListener('click', () => {
+        setSelectedMarker({
+          data: spot,
+          type: 'spot',
+        });
+      });
+
+      const marker = new maplibregl.Marker({ element: el })
+        .setLngLat([spot.location.lng, spot.location.lat])
+        .addTo(mapRef.current!);
+
+      nextMarkers.push(marker);
+    });
+
+    filteredCatches.forEach((catchData) => {
+      const el = createMarkerElement('#F4A261', 14);
+
+      el.addEventListener('click', () => {
+        setSelectedMarker({
+          data: catchData,
+          type: 'catch',
+        });
+      });
+
+      const marker = new maplibregl.Marker({ element: el })
+        .setLngLat([catchData.location.lng, catchData.location.lat])
+        .addTo(mapRef.current!);
+
+      nextMarkers.push(marker);
+    });
+
+    markersRef.current = nextMarkers;
+  }, [filteredSpots, filteredCatches, mapLoaded]);
 
   const handleRecenter = () => {
     if (!mapRef.current) return;
 
-    mapRef.current.panTo(defaultCenter);
-    mapRef.current.setZoom(5);
+    mapRef.current.flyTo({
+      center: defaultCenter,
+      zoom: 5,
+      essential: true,
+    });
   };
 
   const handleFilterChange = (selected: string[]) => {
@@ -75,57 +148,7 @@ export default function MapPage() {
 
   return (
     <div className="relative h-screen w-full bg-gray-100">
-      <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}>
-        <GoogleMap
-          mapContainerStyle={containerStyle}
-          center={defaultCenter}
-          zoom={5}
-          onLoad={(map) => {
-            mapRef.current = map;
-          }}
-          options={{
-            mapId: process.env.NEXT_PUBLIC_GOOGLE_MAP_ID,
-            mapTypeControl: false,
-            streetViewControl: false,
-            fullscreenControl: false,
-            clickableIcons: false,
-          }}
-        >
-          {filteredSpots.map((spot) => (
-            <Marker
-              key={`spot-${spot.id}`}
-              position={{
-                lat: spot.location.lat,
-                lng: spot.location.lng,
-              }}
-              onClick={() =>
-                setSelectedMarker({
-                  data: spot,
-                  type: 'spot',
-                })
-              }
-              icon={spotSvgIcon}
-            />
-          ))}
-
-          {filteredCatches.map((catchData) => (
-            <Marker
-              key={`catch-${catchData.id}`}
-              position={{
-                lat: catchData.location.lat,
-                lng: catchData.location.lng,
-              }}
-              onClick={() =>
-                setSelectedMarker({
-                  data: catchData,
-                  type: 'catch',
-                })
-              }
-              icon={catchSvgIcon}
-            />
-          ))}
-        </GoogleMap>
-      </LoadScript>
+      <div ref={mapContainerRef} className="absolute inset-0" />
 
       <div className="absolute top-4 left-4 right-4 z-20 md:max-w-xs">
         <motion.button

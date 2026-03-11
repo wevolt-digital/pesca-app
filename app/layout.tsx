@@ -2,6 +2,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import MobileNav from '@/components/MobileNav';
+import 'maplibre-gl/dist/maplibre-gl.css';
 
 const inter = Inter({ subsets: ['latin'] });
 
