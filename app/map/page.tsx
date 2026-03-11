@@ -26,15 +26,47 @@ type SelectedMarker = {
   type: 'spot' | 'catch';
 };
 
-function createMarkerElement(color: string, size = 18) {
+const spotIconSvg =
+  'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"%3E%3Cpath d="M12 21s-6-5.2-6-11a6 6 0 1 1 12 0c0 5.8-6 11-6 11Z" fill="white"/%3E%3Ccircle cx="12" cy="10" r="2.5" fill="%230A3D62"/%3E%3C/svg%3E';
+
+const catchIconSvg =
+  'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"%3E%3Cpath d="M3 12c2.5-3 6-4.5 9-4 1.5-2 4-3 7-3-1 2-1.5 3.5-1 5 1.5.5 2.5 1.5 3 3-2 .5-3.5 0-5-1-1 1-2.2 1.8-3.5 2.2L14 17l-2.5-1.2C8.5 16.5 5.5 15 3 12Z"/%3E%3C/svg%3E';
+
+function createMarkerElement(color: string, iconSvg: string, size = 28) {
   const el = document.createElement('div');
   el.style.width = `${size}px`;
   el.style.height = `${size}px`;
   el.style.borderRadius = '9999px';
   el.style.background = color;
   el.style.border = '2px solid white';
-  el.style.boxShadow = '0 4px 10px rgba(0,0,0,0.25)';
+  el.style.boxShadow = '0 4px 12px rgba(0,0,0,0.28)';
   el.style.cursor = 'pointer';
+  el.style.display = 'flex';
+  el.style.alignItems = 'center';
+  el.style.justifyContent = 'center';
+  el.style.transition = 'transform 0.2s ease, box-shadow 0.2s ease';
+
+  const icon = document.createElement('div');
+  icon.style.width = `${size * 0.58}px`;
+  icon.style.height = `${size * 0.58}px`;
+  icon.style.backgroundImage = `url("${iconSvg}")`;
+  icon.style.backgroundRepeat = 'no-repeat';
+  icon.style.backgroundPosition = 'center';
+  icon.style.backgroundSize = 'contain';
+  icon.style.pointerEvents = 'none';
+
+  el.appendChild(icon);
+
+  el.addEventListener('mouseenter', () => {
+    el.style.transform = 'scale(1.08)';
+    el.style.boxShadow = '0 6px 16px rgba(0,0,0,0.32)';
+  });
+
+  el.addEventListener('mouseleave', () => {
+    el.style.transform = 'scale(1)';
+    el.style.boxShadow = '0 4px 12px rgba(0,0,0,0.28)';
+  });
+
   return el;
 }
 
@@ -121,7 +153,7 @@ export default function MapPage() {
       userMarkerRef.current.remove();
     }
 
-    const userEl = createMarkerElement('#2563EB', 20);
+    const userEl = createMarkerElement('#2563EB', spotIconSvg, 26);
 
     userMarkerRef.current = new maplibregl.Marker({ element: userEl })
       .setLngLat(userLocation)
@@ -137,7 +169,7 @@ export default function MapPage() {
     const nextMarkers: maplibregl.Marker[] = [];
 
     filteredSpots.forEach((spot) => {
-      const el = createMarkerElement('#0A3D62', 18);
+      const el = createMarkerElement('#0A3D62', spotIconSvg, 30);
 
       el.addEventListener('click', () => {
         setSelectedMarker({
@@ -154,7 +186,7 @@ export default function MapPage() {
     });
 
     filteredCatches.forEach((catchData) => {
-      const el = createMarkerElement('#F4A261', 14);
+      const el = createMarkerElement('#F4A261', catchIconSvg, 26);
 
       el.addEventListener('click', () => {
         setSelectedMarker({
