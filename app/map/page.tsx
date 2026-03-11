@@ -26,46 +26,53 @@ type SelectedMarker = {
   type: 'spot' | 'catch';
 };
 
-const spotIconSvg =
-  'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"%3E%3Cpath d="M12 21s-6-5.2-6-11a6 6 0 1 1 12 0c0 5.8-6 11-6 11Z" fill="white"/%3E%3Ccircle cx="12" cy="10" r="2.5" fill="%230A3D62"/%3E%3C/svg%3E';
-
-const catchIconSvg =
-  'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"%3E%3Cpath d="M3 12c2.5-3 6-4.5 9-4 1.5-2 4-3 7-3-1 2-1.5 3.5-1 5 1.5.5 2.5 1.5 3 3-2 .5-3.5 0-5-1-1 1-2.2 1.8-3.5 2.2L14 17l-2.5-1.2C8.5 16.5 5.5 15 3 12Z"/%3E%3C/svg%3E';
-
-function createMarkerElement(color: string, iconSvg: string, size = 28) {
+function createMarkerElement(
+  color: string,
+  icon: 'spot' | 'catch' | 'user',
+  size = 28
+) {
   const el = document.createElement('div');
   el.style.width = `${size}px`;
   el.style.height = `${size}px`;
   el.style.borderRadius = '9999px';
   el.style.background = color;
   el.style.border = '2px solid white';
-  el.style.boxShadow = '0 4px 12px rgba(0,0,0,0.28)';
+  el.style.boxShadow = '0 4px 10px rgba(0,0,0,0.22)';
   el.style.cursor = 'pointer';
   el.style.display = 'flex';
   el.style.alignItems = 'center';
   el.style.justifyContent = 'center';
-  el.style.transition = 'transform 0.2s ease, box-shadow 0.2s ease';
+  el.style.flexShrink = '0';
 
-  const icon = document.createElement('div');
-  icon.style.width = `${size * 0.58}px`;
-  icon.style.height = `${size * 0.58}px`;
-  icon.style.backgroundImage = `url("${iconSvg}")`;
-  icon.style.backgroundRepeat = 'no-repeat';
-  icon.style.backgroundPosition = 'center';
-  icon.style.backgroundSize = 'contain';
-  icon.style.pointerEvents = 'none';
+  let iconSvg = '';
 
-  el.appendChild(icon);
+  if (icon === 'spot') {
+    iconSvg = `
+      <svg viewBox="0 0 24 24" width="${size * 0.58}" height="${size * 0.58}" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M12 21s-6-5.2-6-11a6 6 0 1 1 12 0c0 5.8-6 11-6 11Z" fill="white"/>
+        <circle cx="12" cy="10" r="2.5" fill="${color}"/>
+      </svg>
+    `;
+  }
 
-  el.addEventListener('mouseenter', () => {
-    el.style.transform = 'scale(1.08)';
-    el.style.boxShadow = '0 6px 16px rgba(0,0,0,0.32)';
-  });
+  if (icon === 'catch') {
+    iconSvg = `
+      <svg viewBox="0 0 24 24" width="${size * 0.58}" height="${size * 0.58}" fill="white" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M3 12c2.5-3 6-4.5 9-4 1.5-2 4-3 7-3-1 2-1.5 3.5-1 5 1.5.5 2.5 1.5 3 3-2 .5-3.5 0-5-1-1 1-2.2 1.8-3.5 2.2L14 17l-2.5-1.2C8.5 16.5 5.5 15 3 12Z"/>
+      </svg>
+    `;
+  }
 
-  el.addEventListener('mouseleave', () => {
-    el.style.transform = 'scale(1)';
-    el.style.boxShadow = '0 4px 12px rgba(0,0,0,0.28)';
-  });
+  if (icon === 'user') {
+    iconSvg = `
+      <svg viewBox="0 0 24 24" width="${size * 0.54}" height="${size * 0.54}" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" fill="white"/>
+        <path d="M6 19a6 6 0 0 1 12 0" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    `;
+  }
+
+  el.innerHTML = iconSvg;
 
   return el;
 }
@@ -153,9 +160,12 @@ export default function MapPage() {
       userMarkerRef.current.remove();
     }
 
-    const userEl = createMarkerElement('#2563EB', spotIconSvg, 26);
+    const userEl = createMarkerElement('#2563EB', 'user', 26);
 
-    userMarkerRef.current = new maplibregl.Marker({ element: userEl })
+    userMarkerRef.current = new maplibregl.Marker({
+      element: userEl,
+      anchor: 'center',
+    })
       .setLngLat(userLocation)
       .addTo(mapRef.current);
   }, [userLocation, mapLoaded]);
@@ -169,7 +179,7 @@ export default function MapPage() {
     const nextMarkers: maplibregl.Marker[] = [];
 
     filteredSpots.forEach((spot) => {
-      const el = createMarkerElement('#0A3D62', spotIconSvg, 30);
+      const el = createMarkerElement('#0A3D62', 'spot', 30);
 
       el.addEventListener('click', () => {
         setSelectedMarker({
@@ -178,7 +188,10 @@ export default function MapPage() {
         });
       });
 
-      const marker = new maplibregl.Marker({ element: el })
+      const marker = new maplibregl.Marker({
+        element: el,
+        anchor: 'center',
+      })
         .setLngLat([spot.location.lng, spot.location.lat])
         .addTo(mapRef.current!);
 
@@ -186,7 +199,7 @@ export default function MapPage() {
     });
 
     filteredCatches.forEach((catchData) => {
-      const el = createMarkerElement('#F4A261', catchIconSvg, 26);
+      const el = createMarkerElement('#F4A261', 'catch', 26);
 
       el.addEventListener('click', () => {
         setSelectedMarker({
@@ -195,7 +208,10 @@ export default function MapPage() {
         });
       });
 
-      const marker = new maplibregl.Marker({ element: el })
+      const marker = new maplibregl.Marker({
+        element: el,
+        anchor: 'center',
+      })
         .setLngLat([catchData.location.lng, catchData.location.lat])
         .addTo(mapRef.current!);
 
