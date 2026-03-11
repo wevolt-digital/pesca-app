@@ -13,6 +13,11 @@ import { MAP_STYLE } from '@/lib/mapStyle';
 
 const defaultCenter: [number, number] = [-47.8919, -15.7975];
 
+const SOURCE_ID = 'map-points';
+const CLUSTER_LAYER_ID = 'clusters';
+const CLUSTER_COUNT_LAYER_ID = 'cluster-count';
+const UNCLUSTERED_LAYER_ID = 'unclustered-points';
+
 const filterChips: FilterChip[] = [
   { id: 'all', label: 'Todos' },
   { id: 'river', label: 'Rios' },
@@ -26,11 +31,32 @@ type SelectedMarker = {
   type: 'spot' | 'catch';
 };
 
-function createMarkerElement(
-  color: string,
-  icon: 'spot' | 'catch' | 'user',
-  size = 28
-) {
+function createSpotIconSvg(size = 44, color = '#0A3D62') {
+  return `
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 44 44" fill="none">
+      <circle cx="22" cy="22" r="20" fill="${color}" stroke="white" stroke-width="2"/>
+      <path d="M22 30s-5-4.4-5-9.3a5 5 0 1 1 10 0c0 4.9-5 9.3-5 9.3Z" fill="white"/>
+      <circle cx="22" cy="20.5" r="2" fill="${color}"/>
+    </svg>
+  `;
+}
+
+function createCatchIconSvg(size = 40, color = '#F4A261') {
+  return `
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 44 44" fill="none">
+      <circle cx="22" cy="22" r="20" fill="${color}" stroke="white" stroke-width="2"/>
+      <svg x="10" y="10" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+        <path d="M16.69 7.44a6.973 6.973 0 0 0 -1.69 4.56c0 1.747 .64 3.345 1.699 4.571" />
+        <path d="M2 9.504c7.715 8.647 14.75 10.265 20 2.498c-5.25 -7.761 -12.285 -6.142 -20 2.504" />
+        <path d="M18 11v.01" />
+        <path d="M11.5 10.5c-.667 1 -.667 2 0 3" />
+      </svg>
+    </svg>
+  `;
+}
+
+function createUserMarkerElement(color = '#2563EB', size = 28) {
   const el = document.createElement('div');
   el.style.width = `${size}px`;
   el.style.height = `${size}px`;
@@ -38,49 +64,75 @@ function createMarkerElement(
   el.style.background = color;
   el.style.border = '2px solid white';
   el.style.boxShadow = '0 4px 10px rgba(0,0,0,0.22)';
-  el.style.cursor = 'pointer';
   el.style.display = 'flex';
   el.style.alignItems = 'center';
   el.style.justifyContent = 'center';
-  el.style.flexShrink = '0';
 
-  let iconSvg = '';
-
-  if (icon === 'spot') {
-    iconSvg = `
-      <svg viewBox="0 0 24 24" width="${size * 0.58}" height="${size * 0.58}" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M12 21s-6-5.2-6-11a6 6 0 1 1 12 0c0 5.8-6 11-6 11Z" fill="white"/>
-        <circle cx="12" cy="10" r="2.5" fill="${color}"/>
-      </svg>
-    `;
-  }
-
-  if (icon === 'catch') {
-    iconSvg = `
-      <svg viewBox="0 0 24 24" width="${size * 0.58}" height="${size * 0.58}" fill="white" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M3 12c2.5-3 6-4.5 9-4 1.5-2 4-3 7-3-1 2-1.5 3.5-1 5 1.5.5 2.5 1.5 3 3-2 .5-3.5 0-5-1-1 1-2.2 1.8-3.5 2.2L14 17l-2.5-1.2C8.5 16.5 5.5 15 3 12Z"/>
-      </svg>
-    `;
-  }
-
-  if (icon === 'user') {
-    iconSvg = `
-      <svg viewBox="0 0 24 24" width="${size * 0.54}" height="${size * 0.54}" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" fill="white"/>
-        <path d="M6 19a6 6 0 0 1 12 0" stroke="white" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-    `;
-  }
-
-  el.innerHTML = iconSvg;
+  el.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg"
+      width="${size * 0.6}"
+      height="${size * 0.6}"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="white"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
+      <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+    </svg>
+  `;
 
   return el;
+}
+
+async function addSvgImage(
+  map: maplibregl.Map,
+  name: string,
+  svgMarkup: string
+) {
+  if (map.hasImage(name)) return;
+
+  const blob = new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' });
+  const imageBitmap = await createImageBitmap(blob);
+  map.addImage(name, imageBitmap, { pixelRatio: 2 });
+}
+
+function buildGeoJsonData(spots: FishingSpot[], catchesData: Catch[]) {
+  const spotFeatures = spots.map((spot) => ({
+    type: 'Feature',
+    geometry: {
+      type: 'Point',
+      coordinates: [spot.location.lng, spot.location.lat],
+    },
+    properties: {
+      itemId: String(spot.id),
+      pointType: 'spot',
+    },
+  }));
+
+  const catchFeatures = catchesData.map((catchData) => ({
+    type: 'Feature',
+    geometry: {
+      type: 'Point',
+      coordinates: [catchData.location.lng, catchData.location.lat],
+    },
+    properties: {
+      itemId: String(catchData.id),
+      pointType: 'catch',
+    },
+  }));
+
+  return {
+    type: 'FeatureCollection',
+    features: [...spotFeatures, ...catchFeatures],
+  } as any;
 }
 
 export default function MapPage() {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
-  const markersRef = useRef<maplibregl.Marker[]>([]);
   const userMarkerRef = useRef<maplibregl.Marker | null>(null);
 
   const [selectedFilter, setSelectedFilter] = useState<string[]>(['all']);
@@ -107,17 +159,159 @@ export default function MapPage() {
       attributionControl: false,
     });
 
-    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
+    map.addControl(
+      new maplibregl.AttributionControl({ compact: true }),
+      'bottom-right'
+    );
 
-    map.on('load', () => {
+    map.on('load', async () => {
+      await addSvgImage(map, 'spot-icon', createSpotIconSvg());
+      await addSvgImage(map, 'catch-icon', createCatchIconSvg());
+
+      map.addSource(SOURCE_ID, {
+        type: 'geojson',
+        data: buildGeoJsonData(filteredSpots, filteredCatches),
+        cluster: true,
+        clusterMaxZoom: 14,
+        clusterRadius: 50,
+      });
+
+      map.addLayer({
+        id: CLUSTER_LAYER_ID,
+        type: 'circle',
+        source: SOURCE_ID,
+        filter: ['has', 'point_count'],
+        paint: {
+          'circle-color': '#0A3D62',
+          'circle-radius': [
+            'step',
+            ['get', 'point_count'],
+            18,
+            10,
+            22,
+            30,
+            28,
+          ],
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#ffffff',
+        },
+      });
+
+      map.addLayer({
+        id: CLUSTER_COUNT_LAYER_ID,
+        type: 'symbol',
+        source: SOURCE_ID,
+        filter: ['has', 'point_count'],
+        layout: {
+          'text-field': ['get', 'point_count_abbreviated'],
+          'text-font': ['Open Sans Bold'],
+          'text-size': 12,
+        },
+        paint: {
+          'text-color': '#ffffff',
+        },
+      });
+
+      map.addLayer({
+        id: UNCLUSTERED_LAYER_ID,
+        type: 'symbol',
+        source: SOURCE_ID,
+        filter: ['!', ['has', 'point_count']],
+        layout: {
+          'icon-image': [
+            'match',
+            ['get', 'pointType'],
+            'spot',
+            'spot-icon',
+            'catch',
+            'catch-icon',
+            'spot-icon',
+          ],
+          'icon-size': 1,
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true,
+        },
+      });
+
+      map.on('click', CLUSTER_LAYER_ID, (e) => {
+        const features = map.queryRenderedFeatures(e.point, {
+          layers: [CLUSTER_LAYER_ID],
+        });
+
+        const clusterId = features?.[0]?.properties?.cluster_id;
+        if (clusterId == null) return;
+
+        const source = map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource & {
+          getClusterExpansionZoom?: (
+            clusterId: number,
+            callback: (error: Error | null, zoom: number) => void
+          ) => void;
+        };
+
+        source.getClusterExpansionZoom?.(clusterId, (error, zoom) => {
+          if (error) return;
+
+          const coordinates = (features[0].geometry as any).coordinates;
+          map.easeTo({
+            center: coordinates,
+            zoom,
+            duration: 500,
+          });
+        });
+      });
+
+      map.on('click', UNCLUSTERED_LAYER_ID, (e) => {
+        const feature = e.features?.[0];
+        if (!feature) return;
+
+        const itemId = String(feature.properties?.itemId ?? '');
+        const pointType = String(feature.properties?.pointType ?? '');
+
+        if (pointType === 'spot') {
+          const spot = filteredSpots.find((item) => String(item.id) === itemId);
+          if (spot) {
+            setSelectedMarker({
+              data: spot,
+              type: 'spot',
+            });
+          }
+        }
+
+        if (pointType === 'catch') {
+          const catchItem = filteredCatches.find(
+            (item) => String(item.id) === itemId
+          );
+          if (catchItem) {
+            setSelectedMarker({
+              data: catchItem,
+              type: 'catch',
+            });
+          }
+        }
+      });
+
+      map.on('mouseenter', CLUSTER_LAYER_ID, () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+
+      map.on('mouseleave', CLUSTER_LAYER_ID, () => {
+        map.getCanvas().style.cursor = '';
+      });
+
+      map.on('mouseenter', UNCLUSTERED_LAYER_ID, () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+
+      map.on('mouseleave', UNCLUSTERED_LAYER_ID, () => {
+        map.getCanvas().style.cursor = '';
+      });
+
       setMapLoaded(true);
     });
 
     mapRef.current = map;
 
     return () => {
-      markersRef.current.forEach((marker) => marker.remove());
-      markersRef.current = [];
       userMarkerRef.current?.remove();
       userMarkerRef.current = null;
       map.remove();
@@ -148,6 +342,15 @@ export default function MapPage() {
   }, []);
 
   useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+
+    const source = mapRef.current.getSource(SOURCE_ID) as maplibregl.GeoJSONSource | undefined;
+    if (!source) return;
+
+    source.setData(buildGeoJsonData(filteredSpots, filteredCatches));
+  }, [filteredSpots, filteredCatches, mapLoaded]);
+
+  useEffect(() => {
     if (!mapRef.current || !mapLoaded || !userLocation) return;
 
     mapRef.current.flyTo({
@@ -160,7 +363,7 @@ export default function MapPage() {
       userMarkerRef.current.remove();
     }
 
-    const userEl = createMarkerElement('#2563EB', 'user', 26);
+    const userEl = createUserMarkerElement('#2563EB', 26);
 
     userMarkerRef.current = new maplibregl.Marker({
       element: userEl,
@@ -169,57 +372,6 @@ export default function MapPage() {
       .setLngLat(userLocation)
       .addTo(mapRef.current);
   }, [userLocation, mapLoaded]);
-
-  useEffect(() => {
-    if (!mapRef.current || !mapLoaded) return;
-
-    markersRef.current.forEach((marker) => marker.remove());
-    markersRef.current = [];
-
-    const nextMarkers: maplibregl.Marker[] = [];
-
-    filteredSpots.forEach((spot) => {
-      const el = createMarkerElement('#0A3D62', 'spot', 30);
-
-      el.addEventListener('click', () => {
-        setSelectedMarker({
-          data: spot,
-          type: 'spot',
-        });
-      });
-
-      const marker = new maplibregl.Marker({
-        element: el,
-        anchor: 'center',
-      })
-        .setLngLat([spot.location.lng, spot.location.lat])
-        .addTo(mapRef.current!);
-
-      nextMarkers.push(marker);
-    });
-
-    filteredCatches.forEach((catchData) => {
-      const el = createMarkerElement('#F4A261', 'catch', 26);
-
-      el.addEventListener('click', () => {
-        setSelectedMarker({
-          data: catchData,
-          type: 'catch',
-        });
-      });
-
-      const marker = new maplibregl.Marker({
-        element: el,
-        anchor: 'center',
-      })
-        .setLngLat([catchData.location.lng, catchData.location.lat])
-        .addTo(mapRef.current!);
-
-      nextMarkers.push(marker);
-    });
-
-    markersRef.current = nextMarkers;
-  }, [filteredSpots, filteredCatches, mapLoaded]);
 
   const handleRecenter = () => {
     if (!mapRef.current) return;
@@ -247,7 +399,7 @@ export default function MapPage() {
       <div className="absolute top-4 left-4 right-4 z-20 md:max-w-xs">
         <motion.button
           onClick={() => setShowFilterPanel(!showFilterPanel)}
-          className="mb-4 w-full rounded-2xl bg-white p-4 text-left font-semibold text-foreground shadow-lg transition-shadow hover:shadow-xl"
+          className="mb-4 w-full rounded-2xl bg-white p-4 text-left font-semibold shadow-lg hover:shadow-xl"
         >
           <MapPin className="mr-2 inline h-5 w-5 text-primary" />
           Locais de pesca
