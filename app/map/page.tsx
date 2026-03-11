@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import FloatingMapControls from '@/components/FloatingMapControls';
 import MapDetailCard from '@/components/MapDetailCard';
@@ -35,7 +35,8 @@ const catchSvgIcon =
   'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23F4A261"%3E%3Ccircle cx="12" cy="12" r="8" fill="%23F4A261" stroke="white" stroke-width="2"/%3E%3C/svg%3E';
 
 export default function MapPage() {
-  const mapRef = useRef<any>(null);
+  const mapRef = useRef<google.maps.Map | null>(null);
+
   const [selectedFilter, setSelectedFilter] = useState<string[]>(['all']);
   const [selectedMarker, setSelectedMarker] = useState<{
     data: FishingSpot | Catch;
@@ -43,9 +44,15 @@ export default function MapPage() {
   } | null>(null);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
 
-  const filteredSpots = selectedFilter.includes('all')
-    ? fishingSpots
-    : fishingSpots.filter((spot) => selectedFilter.includes(spot.type));
+  const filteredSpots = useMemo(() => {
+    if (selectedFilter.includes('all')) return fishingSpots;
+    return fishingSpots.filter((spot) => selectedFilter.includes(spot.type));
+  }, [selectedFilter]);
+
+  const filteredCatches = useMemo(() => {
+    if (selectedFilter.includes('all')) return catches;
+    return catches.filter((catchData) => selectedFilter.includes(catchData.type));
+  }, [selectedFilter]);
 
   const handleRecenter = () => {
     if (mapRef.current) {
@@ -55,13 +62,12 @@ export default function MapPage() {
   };
 
   const handleFilterChange = (selected: string[]) => {
-    if (selected.length === 0) {
+    if (selected.length === 0 || selected.includes('all')) {
       setSelectedFilter(['all']);
-    } else if (selected.includes('all')) {
-      setSelectedFilter(['all']);
-    } else {
-      setSelectedFilter(selected);
+      return;
     }
+
+    setSelectedFilter(selected);
   };
 
   return (
@@ -75,18 +81,11 @@ export default function MapPage() {
             mapRef.current = map;
           }}
           options={{
-            styles: [
-              {
-                featureType: 'water',
-                elementType: 'geometry',
-                stylers: [{ color: '#c5e1e6' }],
-              },
-              {
-                featureType: 'land',
-                elementType: 'geometry',
-                stylers: [{ color: '#f3f3f3' }],
-              },
-            ],
+            mapId: process.env.NEXT_PUBLIC_GOOGLE_MAP_ID,
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: false,
+            clickableIcons: false,
           }}
         >
           {filteredSpots.map((spot) => (
@@ -106,7 +105,7 @@ export default function MapPage() {
             />
           ))}
 
-          {catches.map((catchData) => (
+          {filteredCatches.map((catchData) => (
             <Marker
               key={`catch-${catchData.id}`}
               position={{
@@ -140,7 +139,9 @@ export default function MapPage() {
             animate={{ opacity: 1, y: 0 }}
             className="bg-white rounded-2xl shadow-lg p-4 glass-effect"
           >
-            <p className="text-xs font-semibold text-muted-foreground mb-3">FILTRAR POR TIPO</p>
+            <p className="text-xs font-semibold text-muted-foreground mb-3">
+              FILTRAR POR TIPO
+            </p>
             <FilterChips
               chips={filterChips}
               selected={selectedFilter}
