@@ -34,14 +34,16 @@ const spotSvgIcon =
 const catchSvgIcon =
   'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23F4A261"%3E%3Ccircle cx="12" cy="12" r="8" fill="%23F4A261" stroke="white" stroke-width="2"/%3E%3C/svg%3E';
 
+type SelectedMarker = {
+  data: FishingSpot | Catch;
+  type: 'spot' | 'catch';
+};
+
 export default function MapPage() {
   const mapRef = useRef<google.maps.Map | null>(null);
 
   const [selectedFilter, setSelectedFilter] = useState<string[]>(['all']);
-  const [selectedMarker, setSelectedMarker] = useState<{
-    data: FishingSpot | Catch;
-    type: 'spot' | 'catch';
-  } | null>(null);
+  const [selectedMarker, setSelectedMarker] = useState<SelectedMarker | null>(null);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
 
   const filteredSpots = useMemo(() => {
@@ -49,16 +51,17 @@ export default function MapPage() {
     return fishingSpots.filter((spot) => selectedFilter.includes(spot.type));
   }, [selectedFilter]);
 
+  // Capturas permanecem visíveis independentemente do filtro de tipo do local,
+  // já que o tipo "Catch" atualmente não possui a propriedade "type".
   const filteredCatches = useMemo(() => {
-    if (selectedFilter.includes('all')) return catches;
-    return catches.filter((catchData) => selectedFilter.includes(catchData.type));
-  }, [selectedFilter]);
+    return catches;
+  }, []);
 
   const handleRecenter = () => {
-    if (mapRef.current) {
-      mapRef.current.panTo(defaultCenter);
-      mapRef.current.setZoom(5);
-    }
+    if (!mapRef.current) return;
+
+    mapRef.current.panTo(defaultCenter);
+    mapRef.current.setZoom(5);
   };
 
   const handleFilterChange = (selected: string[]) => {
@@ -71,7 +74,7 @@ export default function MapPage() {
   };
 
   return (
-    <div className="relative w-full h-screen bg-gray-100">
+    <div className="relative h-screen w-full bg-gray-100">
       <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}>
         <GoogleMap
           mapContainerStyle={containerStyle}
@@ -127,9 +130,9 @@ export default function MapPage() {
       <div className="absolute top-4 left-4 right-4 z-20 md:max-w-xs">
         <motion.button
           onClick={() => setShowFilterPanel(!showFilterPanel)}
-          className="w-full bg-white rounded-2xl shadow-lg p-4 mb-4 text-left font-semibold text-foreground hover:shadow-xl transition-shadow"
+          className="mb-4 w-full rounded-2xl bg-white p-4 text-left font-semibold text-foreground shadow-lg transition-shadow hover:shadow-xl"
         >
-          <MapPin className="w-5 h-5 inline mr-2 text-primary" />
+          <MapPin className="mr-2 inline h-5 w-5 text-primary" />
           Locais de pesca
         </motion.button>
 
@@ -137,9 +140,9 @@ export default function MapPage() {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl shadow-lg p-4 glass-effect"
+            className="glass-effect rounded-2xl bg-white p-4 shadow-lg"
           >
-            <p className="text-xs font-semibold text-muted-foreground mb-3">
+            <p className="mb-3 text-xs font-semibold text-muted-foreground">
               FILTRAR POR TIPO
             </p>
             <FilterChips
