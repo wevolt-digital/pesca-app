@@ -42,11 +42,13 @@ export default function MapPage() {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
+  const userMarkerRef = useRef<maplibregl.Marker | null>(null);
 
   const [selectedFilter, setSelectedFilter] = useState<string[]>(['all']);
   const [selectedMarker, setSelectedMarker] = useState<SelectedMarker | null>(null);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
 
   const filteredSpots = useMemo(() => {
     if (selectedFilter.includes('all')) return fishingSpots;
@@ -77,10 +79,54 @@ export default function MapPage() {
     return () => {
       markersRef.current.forEach((marker) => marker.remove());
       markersRef.current = [];
+      userMarkerRef.current?.remove();
+      userMarkerRef.current = null;
       map.remove();
       mapRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords: [number, number] = [
+          position.coords.longitude,
+          position.coords.latitude,
+        ];
+        setUserLocation(coords);
+      },
+      (error) => {
+        console.error('Erro ao obter localização do usuário:', error);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000,
+      }
+    );
+  }, []);
+
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded || !userLocation) return;
+
+    mapRef.current.flyTo({
+      center: userLocation,
+      zoom: 11,
+      essential: true,
+    });
+
+    if (userMarkerRef.current) {
+      userMarkerRef.current.remove();
+    }
+
+    const userEl = createMarkerElement('#2563EB', 20);
+
+    userMarkerRef.current = new maplibregl.Marker({ element: userEl })
+      .setLngLat(userLocation)
+      .addTo(mapRef.current);
+  }, [userLocation, mapLoaded]);
 
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
@@ -131,8 +177,8 @@ export default function MapPage() {
     if (!mapRef.current) return;
 
     mapRef.current.flyTo({
-      center: defaultCenter,
-      zoom: 5,
+      center: userLocation ?? defaultCenter,
+      zoom: userLocation ? 11 : 5,
       essential: true,
     });
   };
