@@ -17,47 +17,112 @@ export default function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-border shadow-lg z-40 md:hidden">
-      <div className="flex items-center justify-around mobile-nav-safe">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = pathname === item.href;
+    <>
+      {/* Mobile nav */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-white shadow-lg md:hidden">
+        <div className="grid grid-cols-5 items-end mobile-nav-safe px-2 py-2">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.href;
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'flex flex-col items-center justify-center py-3 px-4 transition-colors relative',
-                item.special && 'py-4'
-              )}
-            >
-              {item.special ? (
-                <div className="absolute -top-8 bg-gradient-water p-3 rounded-full shadow-lg">
-                  <Icon className="w-6 h-6 text-white" />
-                </div>
-              ) : (
-                <>
-                  <Icon
+            if (item.special) {
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="relative flex flex-col items-center justify-end"
+                >
+                  <div
                     className={cn(
-                      'w-6 h-6 transition-colors',
-                      isActive ? 'text-primary' : 'text-muted-foreground'
+                      'mb-1 flex h-14 w-14 items-center justify-center rounded-full border-4 border-white shadow-xl transition-transform',
+                      isActive
+                        ? 'bg-primary scale-105'
+                        : 'bg-gradient-water hover:scale-105'
                     )}
-                  />
+                  >
+                    <Icon className="h-6 w-6 text-white" />
+                  </div>
                   <span
                     className={cn(
-                      'text-xs mt-1 font-medium transition-colors',
+                      'text-[11px] font-medium leading-none',
                       isActive ? 'text-primary' : 'text-muted-foreground'
                     )}
                   >
                     {item.label}
                   </span>
-                </>
-              )}
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
+                </Link>
+              );
+            }
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex flex-col items-center justify-center py-2"
+              >
+                <Icon
+                  className={cn(
+                    'h-6 w-6 transition-colors',
+                    isActive ? 'text-primary' : 'text-muted-foreground'
+                  )}
+                />
+                <span
+                  className={cn(
+                    'mt-1 text-xs font-medium transition-colors',
+                    isActive ? 'text-primary' : 'text-muted-foreground'
+                  )}
+                >
+                  {item.label}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* Desktop nav */}
+      <nav className="fixed left-1/2 top-4 z-40 hidden -translate-x-1/2 rounded-full border border-border bg-white/95 px-3 py-2 shadow-lg backdrop-blur md:block">
+        <div className="flex items-center gap-1">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.href;
+
+            if (item.special) {
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    'mx-1 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all',
+                    isActive
+                      ? 'bg-primary text-white shadow-md'
+                      : 'bg-gradient-water text-white hover:opacity-90'
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            }
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors',
+                  isActive
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                )}
+              >
+                <Icon className="h-4 w-4" />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+    </>
   );
 }

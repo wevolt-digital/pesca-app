@@ -8,7 +8,8 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'FishingBR - Rede Social de Pesca',
-  description: 'Plataforma colaborativa para pescadores brasileiros. Registre suas pescas, descubra novos pontos e conecte-se com outros pescadores.',
+  description:
+    'Plataforma colaborativa para pescadores brasileiros. Registre suas pescas, descubra novos pontos e conecte-se com outros pescadores.',
   openGraph: {
     images: [
       {
@@ -34,7 +35,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={inter.className}>
-        <main className="pb-20 md:pb-0">{children}</main>
+        <main className="pb-24 md:pb-0">{children}</main>
         <MobileNav />
       </body>
     </html>
