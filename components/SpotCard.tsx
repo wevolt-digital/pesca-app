@@ -15,6 +15,7 @@ const typeColors = {
   lake: 'bg-cyan-500',
   ocean: 'bg-indigo-500',
   reservoir: 'bg-teal-500',
+  fishery: 'bg-emerald-600',
 };
 
 const typeLabels = {
@@ -22,6 +23,7 @@ const typeLabels = {
   lake: 'Lago',
   ocean: 'Oceano',
   reservoir: 'Represa',
+  fishery: 'Pesqueiro',
 };
 
 export default function SpotCard({ spot, onClick }: SpotCardProps) {
