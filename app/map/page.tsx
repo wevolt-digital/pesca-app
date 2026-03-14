@@ -293,7 +293,6 @@ export default function MapPage() {
       <FloatingMapControls
         onRecenter={handleRecenter}
         onFilter={() => setShowFilterPanel(!showFilterPanel)}
-        onAdd={() => {}}
       />
 
       {selectedMarker && (
