@@ -18,8 +18,8 @@ export default function MobileNav() {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-white/95 shadow-lg backdrop-blur md:hidden">
-        <div className="grid grid-cols-5 items-end mobile-nav-safe px-2 pt-2 pb-3">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-white shadow-lg md:hidden">
+        <div className="grid grid-cols-5 items-end mobile-nav-safe px-2 py-2">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
@@ -31,10 +31,15 @@ export default function MobileNav() {
                   href={item.href}
                   className="relative flex flex-col items-center justify-end"
                 >
-                  <div className="mb-1 flex h-16 w-16 items-center justify-center rounded-full border-4 border-white bg-primary shadow-[0_10px_30px_rgba(0,0,0,0.22)] transition-all hover:scale-105 active:scale-95">
-                    <Icon className="h-7 w-7 text-white" strokeWidth={2.5} />
+                  <div className="mb-1 flex h-14 w-14 items-center justify-center rounded-full border-4 border-white bg-primary shadow-xl transition-transform hover:scale-105">
+                    <Icon className="h-6 w-6 text-white" />
                   </div>
-                  <span className="text-[11px] font-semibold leading-none text-primary">
+                  <span
+                    className={cn(
+                      'text-[11px] font-medium leading-none',
+                      isActive ? 'text-primary' : 'text-muted-foreground'
+                    )}
+                  >
                     {item.label}
                   </span>
                 </Link>
@@ -67,7 +72,7 @@ export default function MobileNav() {
         </div>
       </nav>
 
-      <nav className="fixed left-1/2 top-4 z-40 hidden -translate-x-1/2 rounded-full border border-border bg-white/90 px-3 py-2 shadow-[0_8px_30px_rgba(0,0,0,0.10)] backdrop-blur md:block">
+      <nav className="fixed left-1/2 top-4 z-40 hidden -translate-x-1/2 rounded-full border border-border bg-white/95 px-3 py-2 shadow-lg backdrop-blur md:block">
         <div className="flex items-center gap-1">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -78,9 +83,9 @@ export default function MobileNav() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="mx-1 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:scale-[1.02] hover:opacity-95"
+                  className="mx-1 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white shadow-md transition-all hover:opacity-90"
                 >
-                  <Icon className="h-4 w-4" strokeWidth={2.5} />
+                  <Icon className="h-4 w-4" />
                   <span>{item.label}</span>
                 </Link>
               );
