@@ -15,6 +15,7 @@ const defaultCenter: [number, number] = [-47.8919, -15.7975];
 
 const filterChips: FilterChip[] = [
   { id: 'all', label: 'Todos' },
+  { id: 'fishery', label: 'Pesqueiros' },
   { id: 'river', label: 'Rios' },
   { id: 'lake', label: 'Lagos' },
   { id: 'ocean', label: 'Oceano' },

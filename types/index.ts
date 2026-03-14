@@ -18,7 +18,7 @@ export interface FishingSpot {
     city: string;
     state: string;
   };
-  type: 'river' | 'lake' | 'ocean' | 'reservoir';
+  type: 'river' | 'lake' | 'ocean' | 'reservoir' | 'fishery';
   rating: number;
   totalCatches: number;
   description?: string;

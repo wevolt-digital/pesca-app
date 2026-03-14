@@ -132,6 +132,22 @@ export const fishingSpots: FishingSpot[] = [
     addedBy: users[2],
     photos: ['https://images.pexels.com/photos/975771/pexels-photo-975771.jpeg?auto=compress&cs=tinysrgb&w=800'],
   },
+  {
+    id: '7',
+    name: 'Clube Pescar',
+    location: {
+      lat: -16.297342,
+      lng: -47.960955,
+      city: 'Luziânia',
+      state: 'GO',
+    },
+    type: 'fishery',
+    rating: 4.6,
+    totalCatches: 94,
+    description: 'Pesqueiro localizado na zona rural de Luziânia, com estrutura para pesca e lazer.',
+    addedBy: currentUser,
+    photos: ['https://images.pexels.com/photos/1007426/pexels-photo-1007426.jpeg?auto=compress&cs=tinysrgb&w=800'],
+  },
 ];
 
 export const catches: Catch[] = [
