@@ -32,15 +32,23 @@ const baits = [
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     species: '',
-    weight: '',
-    length: '',
+    weight: '0',
+    length: '0',
     bait: '',
     location: '',
     notes: '',
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
+
+    if (name === 'weight' || name === 'length') {
+      const numericValue = Number(value);
+      if (numericValue < 0) return;
+    }
+
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -51,8 +59,8 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="sticky top-0 bg-white border-b border-border z-10 shadow-sm">
-        <div className="max-w-2xl mx-auto px-4 py-4">
+      <div className="sticky top-0 z-10 border-b border-border bg-white shadow-sm">
+        <div className="mx-auto max-w-2xl px-4 py-4">
           <SectionHeader
             title="Registrar Pesca"
             subtitle="Compartilhe sua melhor captura"
@@ -61,15 +69,17 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-6">
+      <div className="mx-auto max-w-2xl px-4 py-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl p-6 shadow-md space-y-4"
+            className="space-y-4 rounded-2xl bg-white p-6 shadow-md"
           >
             <div>
-              <Label className="block text-sm font-semibold mb-2">Espécie de Peixe</Label>
+              <Label className="mb-2 block text-sm font-semibold">
+                Espécie de Peixe
+              </Label>
               <select
                 name="species"
                 value={formData.species}
@@ -87,7 +97,9 @@ export default function RegisterPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="block text-sm font-semibold mb-2">Peso (kg)</Label>
+                <Label className="mb-2 block text-sm font-semibold">
+                  Peso (kg)
+                </Label>
                 <Input
                   type="number"
                   name="weight"
@@ -95,24 +107,33 @@ export default function RegisterPage() {
                   value={formData.weight}
                   onChange={handleChange}
                   step="0.1"
+                  min="0"
+                  inputMode="decimal"
                   className="rounded-xl"
                 />
               </div>
+
               <div>
-                <Label className="block text-sm font-semibold mb-2">Comprimento (cm)</Label>
+                <Label className="mb-2 block text-sm font-semibold">
+                  Comprimento (cm)
+                </Label>
                 <Input
                   type="number"
                   name="length"
                   placeholder="0"
                   value={formData.length}
                   onChange={handleChange}
+                  min="0"
+                  inputMode="numeric"
                   className="rounded-xl"
                 />
               </div>
             </div>
 
             <div>
-              <Label className="block text-sm font-semibold mb-2">Isca Utilizada</Label>
+              <Label className="mb-2 block text-sm font-semibold">
+                Isca Utilizada
+              </Label>
               <select
                 name="bait"
                 value={formData.bait}
@@ -129,9 +150,11 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <Label className="block text-sm font-semibold mb-2">Local da Pesca</Label>
+              <Label className="mb-2 block text-sm font-semibold">
+                Local da Pesca
+              </Label>
               <div className="relative">
-                <MapPin className="absolute left-3 top-3.5 w-5 h-5 text-muted-foreground pointer-events-none" />
+                <MapPin className="pointer-events-none absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
                 <Input
                   type="text"
                   name="location"
@@ -144,21 +167,27 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <Label className="block text-sm font-semibold mb-2">Foto (opcional)</Label>
-              <div className="border-2 border-dashed border-border rounded-xl p-6 text-center cursor-pointer hover:bg-accent/5 transition-colors">
-                <Camera className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">Clique para fazer upload de uma foto</p>
+              <Label className="mb-2 block text-sm font-semibold">
+                Foto (opcional)
+              </Label>
+              <div className="cursor-pointer rounded-xl border-2 border-dashed border-border p-6 text-center transition-colors hover:bg-accent/5">
+                <Camera className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">
+                  Clique para fazer upload de uma foto
+                </p>
               </div>
             </div>
 
             <div>
-              <Label className="block text-sm font-semibold mb-2">Notas (opcional)</Label>
+              <Label className="mb-2 block text-sm font-semibold">
+                Notas (opcional)
+              </Label>
               <Textarea
                 name="notes"
                 placeholder="Descreva sua pescaria... Como foi a experiência?"
                 value={formData.notes}
                 onChange={handleChange}
-                className="rounded-xl resize-none"
+                className="resize-none rounded-xl"
                 rows={4}
               />
             </div>
@@ -168,20 +197,12 @@ export default function RegisterPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="flex gap-3"
           >
             <Button
               type="submit"
-              className="flex-1 bg-gradient-water text-white py-3 rounded-xl font-semibold"
+              className="w-full rounded-xl bg-primary py-3 font-semibold text-white hover:bg-primary/90"
             >
               Registrar Pesca
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="flex-1 rounded-xl"
-            >
-              Cancelar
             </Button>
           </motion.div>
         </form>
