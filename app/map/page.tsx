@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
+import type { GeoJSONSource } from 'maplibre-gl';
 import FloatingMapControls from '@/components/FloatingMapControls';
 import MapDetailCard from '@/components/MapDetailCard';
 import FilterChips, { FilterChip } from '@/components/FilterChips';
@@ -20,7 +21,6 @@ const filterChips: FilterChip[] = [
   { id: 'reservoir', label: 'Represas' },
   { id: 'river', label: 'Rios' },
   { id: 'ocean', label: 'Oceano' },
-  
 ];
 
 type SelectedMarker = {
@@ -28,102 +28,64 @@ type SelectedMarker = {
   type: 'spot' | 'catch';
 };
 
-function createMarkerElement(
-  color: string,
-  icon: 'spot' | 'catch' | 'user',
-  size = 28
-) {
-  const el = document.createElement('div');
+// ---------------------------------------------------------------------------
+// Helpers: converte arrays para GeoJSON FeatureCollection
+// O campo `data` serializa o objeto completo para recuperar no clique
+// ---------------------------------------------------------------------------
+function spotsToGeoJSON(spots: FishingSpot[]) {
+  return {
+    type: 'FeatureCollection' as const,
+    features: spots
+      .filter(s => Number.isFinite(s.location.lat) && Number.isFinite(s.location.lng))
+      .map(spot => ({
+        type: 'Feature' as const,
+        geometry: {
+          type: 'Point' as const,
+          coordinates: [spot.location.lng, spot.location.lat] as [number, number],
+        },
+        properties: { id: spot.id, data: JSON.stringify(spot) },
+      })),
+  };
+}
 
-  el.style.width = `${size}px`;
-  el.style.height = `${size}px`;
-  el.style.borderRadius = '9999px';
-  el.style.background = color;
-  el.style.border = '2px solid white';
-  el.style.boxShadow = '0 4px 10px rgba(0,0,0,0.22)';
-  el.style.cursor = 'pointer';
-  el.style.display = 'flex';
-  el.style.alignItems = 'center';
-  el.style.justifyContent = 'center';
-
-  let iconSvg = '';
-
-  if (icon === 'spot') {
-    iconSvg = `
-      <svg viewBox="0 0 24 24" width="${size * 0.58}" height="${size *
-      0.58}" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 21s-6-5.2-6-11a6 6 0 1 1 12 0c0 5.8-6 11-6 11Z" fill="white"/>
-        <circle cx="12" cy="10" r="2.5" fill="${color}"/>
-      </svg>
-    `;
-  }
-
-  if (icon === 'catch') {
-    iconSvg = `
-      <svg xmlns="http://www.w3.org/2000/svg"
-        width="${size * 0.6}"
-        height="${size * 0.6}"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="white"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-        <path d="M16.69 7.44a6.973 6.973 0 0 0 -1.69 4.56c0 1.747 .64 3.345 1.699 4.571" />
-        <path d="M2 9.504c7.715 8.647 14.75 10.265 20 2.498c-5.25 -7.761 -12.285 -6.142 -20 2.504" />
-        <path d="M18 11v.01" />
-        <path d="M11.5 10.5c-.667 1 -.667 2 0 3" />
-      </svg>
-    `;
-  }
-
-  if (icon === 'user') {
-    iconSvg = `
-      <svg xmlns="http://www.w3.org/2000/svg"
-        width="${size * 0.6}"
-        height="${size * 0.6}"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="white"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-        <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
-        <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
-      </svg>
-    `;
-  }
-
-  el.innerHTML = iconSvg;
-
-  return el;
+function catchesToGeoJSON(catchList: Catch[]) {
+  return {
+    type: 'FeatureCollection' as const,
+    features: catchList
+      .filter(c => Number.isFinite(c.location.lat) && Number.isFinite(c.location.lng))
+      .map(c => ({
+        type: 'Feature' as const,
+        geometry: {
+          type: 'Point' as const,
+          coordinates: [c.location.lng, c.location.lat] as [number, number],
+        },
+        properties: { id: c.id, data: JSON.stringify(c) },
+      })),
+  };
 }
 
 export default function MapPage() {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
-  const markersRef = useRef<maplibregl.Marker[]>([]);
   const userMarkerRef = useRef<maplibregl.Marker | null>(null);
 
   const [selectedFilter, setSelectedFilter] = useState<string[]>(['all']);
-  const [selectedMarker, setSelectedMarker] = useState<SelectedMarker | null>(
-    null
-  );
+  const [selectedMarker, setSelectedMarker] = useState<SelectedMarker | null>(null);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
-  const [userLocation, setUserLocation] = useState<[number, number] | null>(
-    null
-  );
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
 
   const filteredSpots = useMemo(() => {
     if (selectedFilter.includes('all')) return fishingSpots;
-    return fishingSpots.filter((spot) => selectedFilter.includes(spot.type));
+    return fishingSpots.filter(spot => selectedFilter.includes(spot.type));
   }, [selectedFilter]);
 
   const filteredCatches = useMemo(() => catches, []);
 
+  // ---------------------------------------------------------------------------
+  // Inicialização do mapa + sources + layers + handlers de clique
+  // Executa uma única vez após mount
+  // ---------------------------------------------------------------------------
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
@@ -140,13 +102,183 @@ export default function MapPage() {
       'bottom-right'
     );
 
-    map.on('load', () => setMapLoaded(true));
+    map.on('load', () => {
+      // -----------------------------------------------------------------------
+      // Sources GeoJSON com clustering nativo do MapLibre
+      //
+      // clusterMaxZoom: 13  → acima desse zoom, pontos individuais aparecem
+      // clusterRadius: 80   → raio em px para agrupar pontos no mesmo cluster
+      // -----------------------------------------------------------------------
+      map.addSource('spots', {
+        type: 'geojson',
+        data: spotsToGeoJSON(fishingSpots),
+        cluster: true,
+        clusterMaxZoom: 13,
+        clusterRadius: 80,
+      });
+
+      map.addSource('catches', {
+        type: 'geojson',
+        data: catchesToGeoJSON(catches),
+        cluster: true,
+        clusterMaxZoom: 13,
+        clusterRadius: 80,
+      });
+
+      // -----------------------------------------------------------------------
+      // Layers: Locais de Pesca (azul escuro #0A3D62)
+      // -----------------------------------------------------------------------
+
+      // Círculo do cluster — tamanho cresce com a quantidade de pontos agrupados
+      map.addLayer({
+        id: 'spots-clusters',
+        type: 'circle',
+        source: 'spots',
+        filter: ['has', 'point_count'],
+        paint: {
+          'circle-color': '#0A3D62',
+          // step: < 5 pts → 22px | 5–19 pts → 30px | 20+ pts → 40px
+          'circle-radius': ['step', ['get', 'point_count'], 22, 5, 30, 20, 40],
+          'circle-stroke-width': 3,
+          'circle-stroke-color': '#ffffff',
+          'circle-opacity': 0.92,
+        },
+      });
+
+      // Número dentro do cluster
+      map.addLayer({
+        id: 'spots-cluster-count',
+        type: 'symbol',
+        source: 'spots',
+        filter: ['has', 'point_count'],
+        layout: {
+          'text-field': '{point_count_abbreviated}',
+          'text-font': ['Noto Sans Bold', 'Noto Sans Regular'],
+          'text-size': 13,
+          'text-allow-overlap': true,
+        },
+        paint: { 'text-color': '#ffffff' },
+      });
+
+      // Ponto individual de local de pesca
+      map.addLayer({
+        id: 'spots-unclustered',
+        type: 'circle',
+        source: 'spots',
+        filter: ['!', ['has', 'point_count']],
+        paint: {
+          'circle-color': '#0A3D62',
+          'circle-radius': 10,
+          'circle-stroke-width': 2.5,
+          'circle-stroke-color': '#ffffff',
+        },
+      });
+
+      // -----------------------------------------------------------------------
+      // Layers: Capturas (laranja #F4A261 / cluster mais escuro #E07B3A)
+      // -----------------------------------------------------------------------
+
+      // Círculo do cluster
+      map.addLayer({
+        id: 'catches-clusters',
+        type: 'circle',
+        source: 'catches',
+        filter: ['has', 'point_count'],
+        paint: {
+          'circle-color': '#E07B3A',
+          'circle-radius': ['step', ['get', 'point_count'], 22, 5, 30, 20, 40],
+          'circle-stroke-width': 3,
+          'circle-stroke-color': '#ffffff',
+          'circle-opacity': 0.92,
+        },
+      });
+
+      // Número dentro do cluster
+      map.addLayer({
+        id: 'catches-cluster-count',
+        type: 'symbol',
+        source: 'catches',
+        filter: ['has', 'point_count'],
+        layout: {
+          'text-field': '{point_count_abbreviated}',
+          'text-font': ['Noto Sans Bold', 'Noto Sans Regular'],
+          'text-size': 13,
+          'text-allow-overlap': true,
+        },
+        paint: { 'text-color': '#ffffff' },
+      });
+
+      // Ponto individual de captura
+      map.addLayer({
+        id: 'catches-unclustered',
+        type: 'circle',
+        source: 'catches',
+        filter: ['!', ['has', 'point_count']],
+        paint: {
+          'circle-color': '#F4A261',
+          'circle-radius': 9,
+          'circle-stroke-width': 2.5,
+          'circle-stroke-color': '#ffffff',
+        },
+      });
+
+      // -----------------------------------------------------------------------
+      // Click: cluster → zoom in para expandir
+      // -----------------------------------------------------------------------
+      map.on('click', 'spots-clusters', async (e) => {
+        const features = map.queryRenderedFeatures(e.point, { layers: ['spots-clusters'] });
+        if (!features[0]) return;
+        const clusterId = features[0].properties.cluster_id as number;
+        const source = map.getSource('spots') as GeoJSONSource;
+        const zoom = await source.getClusterExpansionZoom(clusterId);
+        const [lng, lat] = (features[0].geometry as { coordinates: number[] }).coordinates;
+        map.easeTo({ center: [lng, lat], zoom });
+      });
+
+      map.on('click', 'catches-clusters', async (e) => {
+        const features = map.queryRenderedFeatures(e.point, { layers: ['catches-clusters'] });
+        if (!features[0]) return;
+        const clusterId = features[0].properties.cluster_id as number;
+        const source = map.getSource('catches') as GeoJSONSource;
+        const zoom = await source.getClusterExpansionZoom(clusterId);
+        const [lng, lat] = (features[0].geometry as { coordinates: number[] }).coordinates;
+        map.easeTo({ center: [lng, lat], zoom });
+      });
+
+      // -----------------------------------------------------------------------
+      // Click: ponto individual → abre o card de detalhe
+      // -----------------------------------------------------------------------
+      map.on('click', 'spots-unclustered', (e) => {
+        if (!e.features?.[0]?.properties?.data) return;
+        const spot = JSON.parse(e.features[0].properties.data) as FishingSpot;
+        setSelectedMarker({ data: spot, type: 'spot' });
+      });
+
+      map.on('click', 'catches-unclustered', (e) => {
+        if (!e.features?.[0]?.properties?.data) return;
+        const catchData = JSON.parse(e.features[0].properties.data) as Catch;
+        setSelectedMarker({ data: catchData, type: 'catch' });
+      });
+
+      // -----------------------------------------------------------------------
+      // Cursor pointer sobre pontos clicáveis (desktop)
+      // -----------------------------------------------------------------------
+      const onEnter = () => { map.getCanvas().style.cursor = 'pointer'; };
+      const onLeave = () => { map.getCanvas().style.cursor = ''; };
+      ['spots-clusters', 'catches-clusters', 'spots-unclustered', 'catches-unclustered']
+        .forEach(id => {
+          map.on('mouseenter', id, onEnter);
+          map.on('mouseleave', id, onLeave);
+        });
+
+      setMapLoaded(true);
+    });
+
+    map.on('error', (e) => console.error('[MapLibre]', e.error));
 
     mapRef.current = map;
 
     return () => {
-      markersRef.current.forEach((marker) => marker.remove());
-      markersRef.current = [];
       userMarkerRef.current?.remove();
       userMarkerRef.current = null;
       map.remove();
@@ -154,9 +286,23 @@ export default function MapPage() {
     };
   }, []);
 
+  // ---------------------------------------------------------------------------
+  // Sincroniza as sources GeoJSON quando o filtro muda
+  // Não recria layers — apenas atualiza os dados da source
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    (mapRef.current.getSource('spots') as GeoJSONSource | undefined)
+      ?.setData(spotsToGeoJSON(filteredSpots));
+    (mapRef.current.getSource('catches') as GeoJSONSource | undefined)
+      ?.setData(catchesToGeoJSON(filteredCatches));
+  }, [filteredSpots, filteredCatches, mapLoaded]);
+
+  // ---------------------------------------------------------------------------
+  // Geolocalização do usuário
+  // ---------------------------------------------------------------------------
   useEffect(() => {
     if (!navigator.geolocation) return;
-
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const coords: [number, number] = [
@@ -166,83 +312,39 @@ export default function MapPage() {
         setUserLocation(coords);
       },
       (error) => console.error(error),
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 300000,
-      }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
     );
   }, []);
 
+  // Voa para a localização do usuário e adiciona marker DOM azul
   useEffect(() => {
     if (!mapRef.current || !mapLoaded || !userLocation) return;
 
-    mapRef.current.flyTo({
-      center: userLocation,
-      zoom: 11,
-      essential: true,
-    });
+    mapRef.current.flyTo({ center: userLocation, zoom: 11, essential: true });
 
     if (userMarkerRef.current) userMarkerRef.current.remove();
 
-    const userEl = createMarkerElement('#2563EB', 'user', 26);
+    const el = document.createElement('div');
+    el.style.cssText = [
+      'width:26px', 'height:26px', 'border-radius:9999px',
+      'background:#2563EB', 'border:2px solid white',
+      'box-shadow:0 4px 10px rgba(0,0,0,0.22)',
+      'display:flex', 'align-items:center', 'justify-content:center',
+    ].join(';');
+    el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15"
+      viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"/>
+      <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
+    </svg>`;
 
-    userMarkerRef.current = new maplibregl.Marker({
-      element: userEl,
-      anchor: 'center',
-    })
+    userMarkerRef.current = new maplibregl.Marker({ element: el, anchor: 'center' })
       .setLngLat(userLocation)
       .addTo(mapRef.current);
   }, [userLocation, mapLoaded]);
 
-  useEffect(() => {
-    if (!mapRef.current || !mapLoaded) return;
-
-    markersRef.current.forEach((marker) => marker.remove());
-    markersRef.current = [];
-
-    const nextMarkers: maplibregl.Marker[] = [];
-
-    filteredSpots.forEach((spot) => {
-      const el = createMarkerElement('#0A3D62', 'spot', 30);
-
-      el.addEventListener('click', () =>
-        setSelectedMarker({ data: spot, type: 'spot' })
-      );
-
-      const marker = new maplibregl.Marker({
-        element: el,
-        anchor: 'center',
-      })
-        .setLngLat([spot.location.lng, spot.location.lat])
-        .addTo(mapRef.current!);
-
-      nextMarkers.push(marker);
-    });
-
-    filteredCatches.forEach((catchData) => {
-      const el = createMarkerElement('#F4A261', 'catch', 26);
-
-      el.addEventListener('click', () =>
-        setSelectedMarker({ data: catchData, type: 'catch' })
-      );
-
-      const marker = new maplibregl.Marker({
-        element: el,
-        anchor: 'center',
-      })
-        .setLngLat([catchData.location.lng, catchData.location.lat])
-        .addTo(mapRef.current!);
-
-      nextMarkers.push(marker);
-    });
-
-    markersRef.current = nextMarkers;
-  }, [filteredSpots, filteredCatches, mapLoaded]);
-
   const handleRecenter = () => {
     if (!mapRef.current) return;
-
     mapRef.current.flyTo({
       center: userLocation ?? defaultCenter,
       zoom: userLocation ? 11 : 5,
@@ -255,13 +357,12 @@ export default function MapPage() {
       setSelectedFilter(['all']);
       return;
     }
-
     setSelectedFilter(selected);
   };
 
   return (
     <div className="relative h-screen w-full bg-gray-100">
-      <div ref={mapContainerRef} className="absolute inset-0" />
+      <div ref={mapContainerRef} className="w-full h-full" />
 
       <div className="absolute top-4 left-4 right-4 z-20 md:max-w-xs">
         <motion.button

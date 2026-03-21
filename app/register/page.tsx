@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,28 +8,47 @@ import { Textarea } from '@/components/ui/textarea';
 import SectionHeader from '@/components/SectionHeader';
 import { Camera, Fish, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 
-const fishSpecies = [
-  'Tucunaré',
-  'Pintado',
-  'Dourado',
-  'Pirarucu',
-  'Robalo',
-  'Traíra',
-  'Pacu',
-  'Lambari',
-];
+interface SpeciesOption {
+  id: string;
+  name: string;
+}
 
-const baits = [
-  'Isca artificial',
-  'Peixe vivo',
-  'Minhoca',
-  'Camarão',
-  'Frutas',
-  'Massa',
-];
+interface LureOption {
+  id: string;
+  name: string;
+  type: string;
+}
 
 export default function RegisterPage() {
+  const [species, setSpecies] = useState<SpeciesOption[]>([]);
+  const [lures, setLures] = useState<LureOption[]>([]);
+  const [loadingOptions, setLoadingOptions] = useState(true);
+
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+
+    async function fetchOptions() {
+      const [speciesResult, luresResult] = await Promise.all([
+        supabase.from('fish_species').select('id, name').order('name'),
+        supabase.from('lures').select('id, name, type').order('name'),
+      ]);
+
+      // Em caso de erro mantém array vazio — o select exibe só o placeholder
+      if (!speciesResult.error && speciesResult.data) {
+        setSpecies(speciesResult.data);
+      }
+      if (!luresResult.error && luresResult.data) {
+        setLures(luresResult.data);
+      }
+
+      setLoadingOptions(false);
+    }
+
+    fetchOptions();
+  }, []);
+
   const [formData, setFormData] = useState({
     species: '',
     weight: '0',
@@ -84,12 +103,15 @@ export default function RegisterPage() {
                 name="species"
                 value={formData.species}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                disabled={loadingOptions}
+                className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
               >
-                <option value="">Selecione uma espécie</option>
-                {fishSpecies.map((species) => (
-                  <option key={species} value={species}>
-                    {species}
+                <option value="">
+                  {loadingOptions ? 'Carregando...' : 'Selecione uma espécie'}
+                </option>
+                {species.map((s) => (
+                  <option key={s.id} value={s.name}>
+                    {s.name}
                   </option>
                 ))}
               </select>
@@ -138,12 +160,15 @@ export default function RegisterPage() {
                 name="bait"
                 value={formData.bait}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                disabled={loadingOptions}
+                className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
               >
-                <option value="">Selecione a isca</option>
-                {baits.map((bait) => (
-                  <option key={bait} value={bait}>
-                    {bait}
+                <option value="">
+                  {loadingOptions ? 'Carregando...' : 'Selecione a isca'}
+                </option>
+                {lures.map((lure) => (
+                  <option key={lure.id} value={lure.name}>
+                    {lure.name}
                   </option>
                 ))}
               </select>
