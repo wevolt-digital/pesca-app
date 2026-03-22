@@ -94,10 +94,25 @@ export default function IntroPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.95, duration: 0.5 }}
-        className="text-white/50 text-sm text-center mt-3 leading-relaxed"
+        className="text-white/50 text-sm text-center mt-3 mb-14 leading-relaxed"
       >
         A base mais completa de locais e capturas<br />para levar sua pesca ao próximo nível.
       </motion.p>
+
+      {/* Botão provisório — substituir pelo login Google quando OAuth estiver configurado */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.2, duration: 0.5 }}
+        className="w-full max-w-xs"
+      >
+        <button
+          onClick={() => router.push('/map')}
+          className="w-full bg-primary text-white font-semibold py-3.5 rounded-2xl shadow-lg hover:bg-primary/90 transition-colors"
+        >
+          Entrar
+        </button>
+      </motion.div>
     </div>
   );
 }
