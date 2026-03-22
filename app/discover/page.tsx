@@ -15,6 +15,7 @@ const spotTypeChips: FilterChip[] = [
   { id: 'lake', label: 'Lagos' },
   { id: 'ocean', label: 'Oceano' },
   { id: 'reservoir', label: 'Represas' },
+  { id: 'fishery', label: 'Pesqueiros' },
 ];
 
 export default function DiscoverPage() {
