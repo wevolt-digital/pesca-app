@@ -37,6 +37,9 @@ export default function RegisterPage() {
         setUserId(session.user.id);
         return;
       }
+
+      if (process.env.NODE_ENV !== 'development') return;
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email: process.env.NEXT_PUBLIC_DEV_TEST_EMAIL!,
         password: process.env.NEXT_PUBLIC_DEV_TEST_PASSWORD!,
