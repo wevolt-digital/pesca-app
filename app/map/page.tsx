@@ -6,13 +6,80 @@ import type { GeoJSONSource } from 'maplibre-gl';
 import FloatingMapControls from '@/components/FloatingMapControls';
 import MapDetailCard from '@/components/MapDetailCard';
 import FilterChips, { FilterChip } from '@/components/FilterChips';
-import { fishingSpots, catches } from '@/constants/mockData';
 import { FishingSpot, Catch } from '@/types';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { motion } from 'framer-motion';
 import { MapPin } from 'lucide-react';
 import { MAP_STYLE } from '@/lib/mapStyle';
 
 const defaultCenter: [number, number] = [-47.8919, -15.7975];
+
+// ---------------------------------------------------------------------------
+// Tipos para as linhas retornadas pelo Supabase
+// ---------------------------------------------------------------------------
+interface CatchRow {
+  id: string;
+  lat: number;
+  lng: number;
+  species_name: string;
+  weight: number;
+  location_name: string;
+  bait_description: string;
+  caught_at: string;
+}
+
+const STUB_USER = {
+  id: 'unknown',
+  name: 'Pescador',
+  username: 'pescador',
+  avatar: 'https://placehold.co/40x40',
+  totalCatches: 0,
+  totalSpots: 0,
+  joinedDate: '',
+};
+
+interface SpotRow {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  city: string;
+  state: string;
+  type: FishingSpot['type'];
+  rating: number;
+  total_catches: number;
+  description: string | null;
+  photos: string[];
+}
+
+function dbSpotToFishingSpot(row: SpotRow): FishingSpot {
+  return {
+    id: row.id,
+    name: row.name,
+    location: { lat: row.lat, lng: row.lng, city: row.city, state: row.state },
+    type: row.type,
+    rating: row.rating,
+    totalCatches: row.total_catches,
+    description: row.description ?? undefined,
+    addedBy: STUB_USER,
+    photos: row.photos ?? [],
+  };
+}
+
+function dbCatchToCatch(row: CatchRow): Catch {
+  return {
+    id: row.id,
+    user: STUB_USER,
+    species: row.species_name,
+    weight: row.weight,
+    bait: row.bait_description,
+    location: { lat: row.lat, lng: row.lng, name: row.location_name },
+    photo: '',
+    date: row.caught_at,
+    likes: 0,
+    comments: 0,
+  };
+}
 
 const filterChips: FilterChip[] = [
   { id: 'all', label: 'Todos' },
@@ -69,6 +136,8 @@ export default function MapPage() {
   const mapRef = useRef<maplibregl.Map | null>(null);
   const userMarkerRef = useRef<maplibregl.Marker | null>(null);
 
+  const [spots, setSpots] = useState<FishingSpot[]>([]);
+  const [catches, setCatches] = useState<Catch[]>([]);
   const [selectedFilter, setSelectedFilter] = useState<string[]>(['all']);
   const [selectedMarker, setSelectedMarker] = useState<SelectedMarker | null>(null);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
@@ -76,11 +145,51 @@ export default function MapPage() {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
 
   const filteredSpots = useMemo(() => {
-    if (selectedFilter.includes('all')) return fishingSpots;
-    return fishingSpots.filter(spot => selectedFilter.includes(spot.type));
-  }, [selectedFilter]);
+    if (selectedFilter.includes('all')) return spots;
+    return spots.filter(spot => selectedFilter.includes(spot.type));
+  }, [selectedFilter, spots]);
 
-  const filteredCatches = useMemo(() => catches, []);
+  // ---------------------------------------------------------------------------
+  // Busca locais de pesca reais do Supabase
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+
+    async function fetchSpots() {
+      const { data, error } = await supabase
+        .from('fishing_spots')
+        .select('id, name, lat, lng, city, state, type, rating, total_catches, description, photos');
+      if (error) {
+        console.error('Erro ao buscar locais de pesca:', error);
+        return;
+      }
+      setSpots((data ?? []).map(dbSpotToFishingSpot));
+    }
+
+    fetchSpots();
+  }, []);
+
+  // ---------------------------------------------------------------------------
+  // Busca capturas reais do Supabase
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+
+    async function fetchCatches() {
+      const { data, error } = await supabase
+        .from('catches')
+        .select('id, lat, lng, species_name, weight, location_name, bait_description, caught_at');
+      if (error) {
+        console.error('Erro ao buscar capturas:', error);
+        return;
+      }
+      setCatches((data ?? []).map(dbCatchToCatch));
+    }
+
+    fetchCatches();
+  }, []);
+
+  const filteredCatches = useMemo(() => catches, [catches]);
 
   // ---------------------------------------------------------------------------
   // Inicialização do mapa + sources + layers + handlers de clique
@@ -111,7 +220,7 @@ export default function MapPage() {
       // -----------------------------------------------------------------------
       map.addSource('spots', {
         type: 'geojson',
-        data: spotsToGeoJSON(fishingSpots),
+        data: { type: 'FeatureCollection', features: [] },
         cluster: true,
         clusterMaxZoom: 13,
         clusterRadius: 80,

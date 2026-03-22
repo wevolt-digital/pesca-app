@@ -25,6 +25,31 @@ export default function RegisterPage() {
   const [species, setSpecies] = useState<SpeciesOption[]>([]);
   const [lures, setLures] = useState<LureOption[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  // DEV ONLY: sign-in automático com usuário de teste se não houver sessão ativa
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+
+    async function devSignIn() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setUserId(session.user.id);
+        return;
+      }
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: process.env.NEXT_PUBLIC_DEV_TEST_EMAIL!,
+        password: process.env.NEXT_PUBLIC_DEV_TEST_PASSWORD!,
+      });
+      if (error) {
+        console.error('Dev sign-in falhou:', error.message);
+      } else {
+        setUserId(data.user.id);
+      }
+    }
+
+    devSignIn();
+  }, []);
 
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
@@ -35,7 +60,6 @@ export default function RegisterPage() {
         supabase.from('lures').select('id, name, type').order('name'),
       ]);
 
-      // Em caso de erro mantém array vazio — o select exibe só o placeholder
       if (!speciesResult.error && speciesResult.data) {
         setSpecies(speciesResult.data);
       }
@@ -50,10 +74,10 @@ export default function RegisterPage() {
   }, []);
 
   const [formData, setFormData] = useState({
-    species: '',
+    species_id: '',
     weight: '0',
     length: '0',
-    bait: '',
+    lure_id: '',
     location: '',
     notes: '',
   });
@@ -71,9 +95,55 @@ export default function RegisterPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+
+    if (!userId) {
+      console.error('Usuário não autenticado');
+      return;
+    }
+
+    if (!formData.species_id || !formData.weight) {
+      console.error('Preencha espécie e peso');
+      return;
+    }
+
+    const selectedSpecies = species.find((s) => s.id === formData.species_id);
+    const selectedLure = lures.find((l) => l.id === formData.lure_id);
+
+    const supabase = getSupabaseBrowserClient();
+    const { data, error } = await supabase
+      .from('catches')
+      .insert({
+        user_id: userId,
+        species_id: formData.species_id || null,
+        species_name: selectedSpecies?.name ?? '',
+        weight: formData.weight ? parseFloat(formData.weight) : null,
+        length: formData.length ? parseFloat(formData.length) : null,
+        lure_id: formData.lure_id || null,
+        bait_description: selectedLure?.name ?? '',
+        lat: -23.55,
+        lng: -46.63,
+        location_name: formData.location,
+        notes: formData.notes || null,
+        photo_url: null,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Erro ao registrar captura:', error);
+    } else {
+      console.log('Captura registrada com sucesso:', data);
+      setFormData({
+        species_id: '',
+        weight: '0',
+        length: '',
+        lure_id: '',
+        location: '',
+        notes: '',
+      });
+    }
   };
 
   return (
@@ -100,8 +170,8 @@ export default function RegisterPage() {
                 Espécie de Peixe
               </Label>
               <select
-                name="species"
-                value={formData.species}
+                name="species_id"
+                value={formData.species_id}
                 onChange={handleChange}
                 disabled={loadingOptions}
                 className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
@@ -110,7 +180,7 @@ export default function RegisterPage() {
                   {loadingOptions ? 'Carregando...' : 'Selecione uma espécie'}
                 </option>
                 {species.map((s) => (
-                  <option key={s.id} value={s.name}>
+                  <option key={s.id} value={s.id}>
                     {s.name}
                   </option>
                 ))}
@@ -157,8 +227,8 @@ export default function RegisterPage() {
                 Isca Utilizada
               </Label>
               <select
-                name="bait"
-                value={formData.bait}
+                name="lure_id"
+                value={formData.lure_id}
                 onChange={handleChange}
                 disabled={loadingOptions}
                 className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
@@ -167,7 +237,7 @@ export default function RegisterPage() {
                   {loadingOptions ? 'Carregando...' : 'Selecione a isca'}
                 </option>
                 {lures.map((lure) => (
-                  <option key={lure.id} value={lure.name}>
+                  <option key={lure.id} value={lure.id}>
                     {lure.name}
                   </option>
                 ))}
