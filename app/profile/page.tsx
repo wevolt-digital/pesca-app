@@ -14,7 +14,7 @@ const userCatches = catches.filter((c) => c.user.id === currentUser.id);
 
 export default function ProfilePage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background md:pt-20">
       <div className="sticky top-0 bg-white border-b border-border z-10 shadow-sm md:hidden">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <SectionHeader

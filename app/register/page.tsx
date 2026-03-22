@@ -150,7 +150,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background md:pt-20">
       <div className="sticky top-0 z-10 border-b border-border bg-white shadow-sm md:hidden">
         <div className="mx-auto max-w-2xl px-4 py-4">
           <SectionHeader
