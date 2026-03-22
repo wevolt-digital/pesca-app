@@ -11,11 +11,11 @@ import { motion } from 'framer-motion';
 
 const spotTypeChips: FilterChip[] = [
   { id: 'all', label: 'Todos' },
-  { id: 'river', label: 'Rios' },
-  { id: 'lake', label: 'Lagos' },
-  { id: 'ocean', label: 'Oceano' },
-  { id: 'reservoir', label: 'Represas' },
   { id: 'fishery', label: 'Pesqueiros' },
+  { id: 'lake', label: 'Lagos' },
+  { id: 'reservoir', label: 'Represas' },
+  { id: 'river', label: 'Rios' },
+  { id: 'ocean', label: 'Oceano' },
 ];
 
 export default function DiscoverPage() {
