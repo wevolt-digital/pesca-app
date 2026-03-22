@@ -118,7 +118,7 @@ export default function RegisterPage() {
         user_id: userId,
         species_id: formData.species_id || null,
         species_name: selectedSpecies?.name ?? '',
-        weight: formData.weight ? parseFloat(formData.weight) : null,
+        weight: parseFloat(formData.weight),
         length: formData.length ? parseFloat(formData.length) : null,
         lure_id: formData.lure_id || null,
         bait_description: selectedLure?.name ?? '',

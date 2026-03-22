@@ -5,6 +5,9 @@ export type SpotType = 'river' | 'lake' | 'ocean' | 'reservoir' | 'fishery'
 export type LureType = 'artificial' | 'natural' | 'fly' | 'jig' | 'other'
 
 export interface Database {
+  __InternalSupabase: {
+    PostgrestVersion: '12'
+  }
   public: {
     Tables: {
       profiles: {
@@ -33,6 +36,7 @@ export interface Database {
           bio?: string | null
           updated_at?: string
         }
+        Relationships: []
       }
       fishing_spots: {
         Row: {
@@ -80,6 +84,7 @@ export interface Database {
           photos?: string[]
           updated_at?: string
         }
+        Relationships: []
       }
       fish_species: {
         Row: {
@@ -113,6 +118,7 @@ export interface Database {
           habitat?: string[]
           popular_baits?: string[]
         }
+        Relationships: []
       }
       lures: {
         Row: {
@@ -137,6 +143,7 @@ export interface Database {
           description?: string | null
           image_url?: string | null
         }
+        Relationships: []
       }
       catches: {
         Row: {
@@ -199,6 +206,7 @@ export interface Database {
           comments_count?: number
           updated_at?: string
         }
+        Relationships: []
       }
     }
     Views: {
