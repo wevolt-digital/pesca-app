@@ -30,6 +30,8 @@ export default function EditProfilePage() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Carrega sessão e dados do perfil
   useEffect(() => {
@@ -100,6 +102,7 @@ export default function EditProfilePage() {
 
     setSaving(true);
     setSaveMessage(null);
+    setSaveError(null);
 
     const supabase = getSupabaseBrowserClient();
     let newAvatarUrl = avatarUrl;
@@ -114,6 +117,7 @@ export default function EditProfilePage() {
 
       if (uploadError) {
         console.error('Erro ao fazer upload da foto:', uploadError);
+        setSaveError('Não foi possível fazer upload da foto. Tente novamente.');
         setSaving(false);
         return;
       }
@@ -131,8 +135,10 @@ export default function EditProfilePage() {
 
     if (error) {
       console.error('Erro ao salvar perfil:', error);
+      setSaveError('Não foi possível salvar as alterações. Tente novamente.');
     } else {
       setSaveMessage('Perfil atualizado com sucesso.');
+      setTimeout(() => setSaveMessage(null), 4000);
     }
 
     setSaving(false);
@@ -158,8 +164,12 @@ export default function EditProfilePage() {
     if (res.ok) {
       await supabase.auth.signOut();
       router.push('/');
+    } else if (res.status === 401) {
+      setDeleteError('Sessão expirada. Recarregue a página.');
+      setDeleting(false);
     } else {
       console.error('Erro ao excluir conta');
+      setDeleteError('Não foi possível excluir a conta. Tente novamente.');
       setDeleting(false);
     }
   };
@@ -253,7 +263,9 @@ export default function EditProfilePage() {
 
           {/* Nome */}
           <div>
-            <Label className="mb-2 block text-sm font-semibold">Nome</Label>
+            <Label className="mb-2 block text-sm font-semibold">
+              Nome <span className="text-red-500">*</span>
+            </Label>
             <Input
               type="text"
               value={name}
@@ -277,6 +289,12 @@ export default function EditProfilePage() {
 
           {saveMessage && (
             <p className="text-sm text-green-600 font-medium">{saveMessage}</p>
+          )}
+          {saveError && (
+            <p className="text-sm text-red-500 flex items-center gap-1.5">
+              <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+              {saveError}
+            </p>
           )}
 
           <Button
@@ -329,11 +347,17 @@ export default function EditProfilePage() {
               Tem certeza? Todos os seus dados serão permanentemente removidos. Esta ação não
               pode ser desfeita.
             </p>
+            {deleteError && (
+              <p className="text-sm text-red-500 flex items-center gap-1.5">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                {deleteError}
+              </p>
+            )}
             <div className="flex gap-3">
               <Button
                 variant="outline"
                 className="flex-1 rounded-xl"
-                onClick={() => setShowDeleteModal(false)}
+                onClick={() => { setShowDeleteModal(false); setDeleteError(null); }}
                 disabled={deleting}
               >
                 Cancelar
