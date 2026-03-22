@@ -225,7 +225,11 @@ BEGIN
     NEW.id,
     final_username,
     COALESCE(NULLIF(trim(NEW.raw_user_meta_data->>'name'), ''), 'Novo Pescador'),
-    NULLIF(trim(COALESCE(NEW.raw_user_meta_data->>'avatar_url', '')), '')
+    NULLIF(trim(COALESCE(
+      NEW.raw_user_meta_data->>'avatar_url',
+      NEW.raw_user_meta_data->>'picture',
+      ''
+    )), '')
   );
 
   RETURN NEW;

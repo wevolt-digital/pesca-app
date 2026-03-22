@@ -5,6 +5,9 @@ import { usePathname } from 'next/navigation';
 import { Map, Zap, Plus, Compass, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+// Rotas onde a navegação não deve ser exibida
+const ROUTES_WITHOUT_NAV: string[] = ['/'];
+
 const navItems = [
   { href: '/map', icon: Map, label: 'Mapa' },
   { href: '/feed', icon: Zap, label: 'Feed' },
@@ -15,6 +18,8 @@ const navItems = [
 
 export default function MobileNav() {
   const pathname = usePathname();
+
+  if (ROUTES_WITHOUT_NAV.includes(pathname)) return null;
 
   return (
     <>
