@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import UserAvatar from '@/components/UserAvatar';
 import StatsCard from '@/components/StatsCard';
 import SectionHeader from '@/components/SectionHeader';
@@ -13,6 +14,8 @@ import { motion } from 'framer-motion';
 const userCatches = catches.filter((c) => c.user.id === currentUser.id);
 
 export default function ProfilePage() {
+  const router = useRouter();
+
   return (
     <div className="min-h-screen bg-background md:pt-20">
       <div className="sticky top-0 bg-white border-b border-border z-10 shadow-sm md:hidden">
@@ -42,7 +45,12 @@ export default function ProfilePage() {
                 )}
               </div>
             </div>
-            <Button className="bg-primary text-white rounded-xl">Editar Perfil</Button>
+            <Button
+              className="bg-primary text-white rounded-xl"
+              onClick={() => router.push('/profile/edit')}
+            >
+              Editar Perfil
+            </Button>
           </div>
         </motion.div>
 
