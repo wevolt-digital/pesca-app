@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import SpotCard from '@/components/SpotCard';
+import SpotModal from '@/components/SpotModal';
 import SectionHeader from '@/components/SectionHeader';
 import FilterChips, { FilterChip } from '@/components/FilterChips';
-import { fishingSpots } from '@/constants/mockData';
+import { fishingSpots, catches } from '@/constants/mockData';
+import { FishingSpot } from '@/types';
 import { Compass, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { motion } from 'framer-motion';
@@ -21,6 +23,7 @@ const spotTypeChips: FilterChip[] = [
 export default function DiscoverPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSpotTypes, setSelectedSpotTypes] = useState<string[]>(['all']);
+  const [selectedSpot, setSelectedSpot] = useState<FishingSpot | null>(null);
 
   const filteredSpots = fishingSpots
     .filter((spot) =>
@@ -92,11 +95,19 @@ export default function DiscoverPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <SpotCard spot={spot} />
+              <SpotCard spot={spot} onClick={() => setSelectedSpot(spot)} />
             </motion.div>
           ))}
         </div>
       </div>
+
+      {selectedSpot && (
+        <SpotModal
+          spot={selectedSpot}
+          catches={catches}
+          onClose={() => setSelectedSpot(null)}
+        />
+      )}
     </div>
   );
 }
