@@ -63,7 +63,7 @@ export default function IntroPage() {
         className="text-center"
       >
         <Image
-          src="/fishintel-logo.svg"
+          src="/logo-fishintel.svg"
           alt="Fishintel"
           width={240}
           height={80}
