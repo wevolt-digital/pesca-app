@@ -31,11 +31,17 @@ export default function DiscoverPage() {
     );
 
   const handleSpotFilterChange = (selected: string[]) => {
-    if (selected.length === 0 || selected.includes('all')) {
+    if (selected.length === 0) {
       setSelectedSpotTypes(['all']);
-    } else {
-      setSelectedSpotTypes(selected);
+      return;
     }
+    // Usuário clicou em 'all' → limpa o resto
+    if (selected.includes('all') && !selectedSpotTypes.includes('all')) {
+      setSelectedSpotTypes(['all']);
+      return;
+    }
+    // Usuário clicou em um filtro específico → remove 'all'
+    setSelectedSpotTypes(selected.filter((s) => s !== 'all'));
   };
 
   return (
