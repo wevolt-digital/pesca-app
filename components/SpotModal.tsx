@@ -36,25 +36,25 @@ export default function SpotModal({ spot, catches, onClose }: SpotModalProps) {
 
   return (
     <AnimatePresence>
-      {/* Backdrop */}
+      {/* Backdrop + container de centralização */}
       <motion.div
         key="backdrop"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
-      />
-
-      {/* Sheet / Modal */}
-      <motion.div
-        key="modal"
-        initial={{ opacity: 0, y: 80 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 80 }}
-        transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-        className="fixed bottom-0 left-0 right-0 z-50 max-h-[92vh] overflow-y-auto rounded-t-3xl bg-white md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-lg md:rounded-3xl md:max-h-[85vh]"
+        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm md:flex md:items-center md:justify-center md:p-6"
       >
+        {/* Sheet / Modal */}
+        <motion.div
+          key="modal"
+          initial={{ opacity: 0, y: 80 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 80 }}
+          transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+          onClick={(e) => e.stopPropagation()}
+          className="fixed bottom-0 left-0 right-0 max-h-[92vh] overflow-y-auto rounded-t-3xl bg-white md:static md:w-full md:max-w-lg md:rounded-3xl md:max-h-[85vh]"
+        >
         {/* Foto header */}
         <div className="relative h-52 flex-shrink-0">
           <Image
@@ -181,6 +181,7 @@ export default function SpotModal({ spot, catches, onClose }: SpotModalProps) {
           {/* Espaço extra para safe area no mobile */}
           <div className="h-2" />
         </div>
+        </motion.div>
       </motion.div>
     </AnimatePresence>
   );
