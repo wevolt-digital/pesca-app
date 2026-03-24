@@ -88,7 +88,7 @@ export default function IntroPage() {
         transition={{ delay: 0.95, duration: 0.5 }}
         className="text-white/50 text-sm text-center mt-3 mb-14 leading-relaxed"
       >
-        A base mais completa de locais e capturas<br />para levar sua pesca ao próximo nível.
+        Uma base completa de locais e capturas<br />para levar sua pescaria ao próximo nível.
       </motion.p>
 
       {/* Botão Google */}
