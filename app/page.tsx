@@ -107,7 +107,7 @@ export default function IntroPage() {
         className="w-full max-w-xs"
       >
         <button
-          onClick={() => router.push('/map')}
+          onClick={() => router.push('/onboarding')}
           className="w-full bg-primary text-white font-semibold py-3.5 rounded-2xl shadow-lg hover:bg-primary/90 transition-colors"
         >
           Entrar
