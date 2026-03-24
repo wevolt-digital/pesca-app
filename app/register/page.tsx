@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,6 +26,28 @@ export default function RegisterPage() {
   const [lures, setLures] = useState<LureOption[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+
+  // Autocomplete de espécie
+  const [speciesQuery, setSpeciesQuery] = useState('');
+  const [speciesOpen, setSpeciesOpen] = useState(false);
+  const speciesRef = useRef<HTMLDivElement>(null);
+
+  const filteredSpecies = speciesQuery.trim().length > 0
+    ? species.filter((s) =>
+        s.name.toLowerCase().includes(speciesQuery.toLowerCase())
+      ).slice(0, 8)
+    : [];
+
+  // Fecha dropdown ao clicar fora
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (speciesRef.current && !speciesRef.current.contains(e.target as Node)) {
+        setSpeciesOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // DEV ONLY: sign-in automático com usuário de teste se não houver sessão ativa
   useEffect(() => {
@@ -106,7 +128,7 @@ export default function RegisterPage() {
       return;
     }
 
-    if (!formData.species_id || !formData.weight) {
+    if ((!formData.species_id && !speciesQuery.trim()) || !formData.weight) {
       console.error('Preencha espécie e peso');
       return;
     }
@@ -120,7 +142,7 @@ export default function RegisterPage() {
       .insert({
         user_id: userId,
         species_id: formData.species_id || null,
-        species_name: selectedSpecies?.name ?? '',
+        species_name: selectedSpecies?.name ?? speciesQuery.trim(),
         weight: parseFloat(formData.weight),
         length: formData.length ? parseFloat(formData.length) : null,
         lure_id: formData.lure_id || null,
@@ -146,6 +168,7 @@ export default function RegisterPage() {
         location: '',
         notes: '',
       });
+      setSpeciesQuery('');
     }
   };
 
@@ -172,22 +195,38 @@ export default function RegisterPage() {
               <Label className="mb-2 block text-sm font-semibold">
                 Espécie de Peixe
               </Label>
-              <select
-                name="species_id"
-                value={formData.species_id}
-                onChange={handleChange}
-                disabled={loadingOptions}
-                className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
-              >
-                <option value="">
-                  {loadingOptions ? 'Carregando...' : 'Selecione uma espécie'}
-                </option>
-                {species.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
+              <div ref={speciesRef} className="relative">
+                <input
+                  type="text"
+                  value={speciesQuery}
+                  onChange={(e) => {
+                    setSpeciesQuery(e.target.value);
+                    setFormData((prev) => ({ ...prev, species_id: '' }));
+                    setSpeciesOpen(true);
+                  }}
+                  onFocus={() => { if (speciesQuery.trim()) setSpeciesOpen(true); }}
+                  placeholder={loadingOptions ? 'Carregando...' : 'Digite o nome da espécie...'}
+                  disabled={loadingOptions}
+                  className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+                />
+                {speciesOpen && filteredSpecies.length > 0 && (
+                  <ul className="absolute z-20 mt-1 w-full rounded-xl border border-border bg-white shadow-lg overflow-hidden">
+                    {filteredSpecies.map((s) => (
+                      <li
+                        key={s.id}
+                        onMouseDown={() => {
+                          setSpeciesQuery(s.name);
+                          setFormData((prev) => ({ ...prev, species_id: s.id }));
+                          setSpeciesOpen(false);
+                        }}
+                        className="cursor-pointer px-4 py-2.5 text-sm hover:bg-primary/10 hover:text-primary transition-colors"
+                      >
+                        {s.name}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

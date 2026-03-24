@@ -53,12 +53,6 @@ END $$;
 CREATE TABLE IF NOT EXISTS fish_species (
   id              uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   name            text        NOT NULL,
-  scientific_name text,
-  image_url       text,
-  description     text,
-  average_weight  text,
-  habitat         text[]      NOT NULL DEFAULT '{}',
-  popular_baits   text[]      NOT NULL DEFAULT '{}',
   created_at      timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT fish_species_name_unique UNIQUE (name)
 );

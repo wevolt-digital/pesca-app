@@ -90,33 +90,15 @@ export interface Database {
         Row: {
           id: string
           name: string
-          scientific_name: string | null
-          image_url: string | null
-          description: string | null
-          average_weight: string | null
-          habitat: string[]
-          popular_baits: string[]
           created_at: string
         }
         Insert: {
           id?: string
           name: string
-          scientific_name?: string | null
-          image_url?: string | null
-          description?: string | null
-          average_weight?: string | null
-          habitat?: string[]
-          popular_baits?: string[]
           created_at?: string
         }
         Update: {
           name?: string
-          scientific_name?: string | null
-          image_url?: string | null
-          description?: string | null
-          average_weight?: string | null
-          habitat?: string[]
-          popular_baits?: string[]
         }
         Relationships: []
       }
