@@ -2,6 +2,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import MobileNav from '@/components/MobileNav';
+import ReportButton from '@/components/ReportButton';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -37,6 +38,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <main className="pb-24 md:pb-0">{children}</main>
         <MobileNav />
+        <ReportButton />
       </body>
     </html>
   );
