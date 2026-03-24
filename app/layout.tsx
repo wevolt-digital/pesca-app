@@ -1,13 +1,14 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Dongle } from 'next/font/google';
 import MobileNav from '@/components/MobileNav';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const dongle = Dongle({ subsets: ['latin'], weight: ['300', '400', '700'], variable: '--font-dongle' });
 
 export const metadata: Metadata = {
-  title: 'FishingBR - Rede Social de Pesca',
+  title: 'Fishintel - Inteligência de Pesca',
   description:
     'Plataforma colaborativa para pescadores brasileiros. Registre suas pescas, descubra novos pontos e conecte-se com outros pescadores.',
   openGraph: {
@@ -34,7 +35,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className={inter.className}>
+      <body className={`${inter.variable} ${dongle.variable} font-sans`}>
         <main className="pb-24 md:pb-0">{children}</main>
         <MobileNav />
       </body>

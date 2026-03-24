@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 
 function GoogleIcon() {
@@ -54,15 +55,20 @@ export default function IntroPage() {
 
   return (
     <div className="min-h-screen bg-[#0a1628] flex flex-col items-center justify-center px-6">
-      {/* Logo tipográfico */}
+      {/* Logo */}
       <motion.div
         initial={{ scale: 0.6, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         className="text-center"
       >
-        <span className="text-6xl font-black text-white tracking-tight">Fishing</span>
-        <span className="text-6xl font-black text-primary tracking-tight">BR</span>
+        <Image
+          src="/fishintel-logo.svg"
+          alt="Fishintel"
+          width={240}
+          height={80}
+          priority
+        />
       </motion.div>
 
       {/* Frase principal */}
