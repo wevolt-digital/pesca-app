@@ -1,11 +1,10 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Inter, Dongle } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import MobileNav from '@/components/MobileNav';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
-const dongle = Dongle({ subsets: ['latin'], weight: ['300', '400', '700'], variable: '--font-dongle' });
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Fishintel - Inteligência de Pesca',
@@ -35,7 +34,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className={`${inter.variable} ${dongle.variable} font-sans`}>
+      <body className={inter.className}>
         <main className="pb-24 md:pb-0">{children}</main>
         <MobileNav />
       </body>
