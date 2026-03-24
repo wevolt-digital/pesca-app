@@ -38,11 +38,25 @@ export default function RegisterPage() {
       ).slice(0, 8)
     : [];
 
-  // Fecha dropdown ao clicar fora
+  // Autocomplete de isca
+  const [lureQuery, setLureQuery] = useState('');
+  const [lureOpen, setLureOpen] = useState(false);
+  const lureRef = useRef<HTMLDivElement>(null);
+
+  const filteredLures = lureQuery.trim().length > 0
+    ? lures.filter((l) =>
+        l.name.toLowerCase().includes(lureQuery.toLowerCase())
+      ).slice(0, 8)
+    : [];
+
+  // Fecha dropdowns ao clicar fora
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (speciesRef.current && !speciesRef.current.contains(e.target as Node)) {
         setSpeciesOpen(false);
+      }
+      if (lureRef.current && !lureRef.current.contains(e.target as Node)) {
+        setLureOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -146,7 +160,7 @@ export default function RegisterPage() {
         weight: parseFloat(formData.weight),
         length: formData.length ? parseFloat(formData.length) : null,
         lure_id: formData.lure_id || null,
-        bait_description: selectedLure?.name ?? '',
+        bait_description: selectedLure?.name ?? lureQuery.trim(),
         lat: -23.55,
         lng: -46.63,
         location_name: formData.location,
@@ -169,6 +183,7 @@ export default function RegisterPage() {
         notes: '',
       });
       setSpeciesQuery('');
+      setLureQuery('');
     }
   };
 
@@ -268,22 +283,38 @@ export default function RegisterPage() {
               <Label className="mb-2 block text-sm font-semibold">
                 Isca Utilizada
               </Label>
-              <select
-                name="lure_id"
-                value={formData.lure_id}
-                onChange={handleChange}
-                disabled={loadingOptions}
-                className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
-              >
-                <option value="">
-                  {loadingOptions ? 'Carregando...' : 'Selecione a isca'}
-                </option>
-                {lures.map((lure) => (
-                  <option key={lure.id} value={lure.id}>
-                    {lure.name}
-                  </option>
-                ))}
-              </select>
+              <div ref={lureRef} className="relative">
+                <input
+                  type="text"
+                  value={lureQuery}
+                  onChange={(e) => {
+                    setLureQuery(e.target.value);
+                    setFormData((prev) => ({ ...prev, lure_id: '' }));
+                    setLureOpen(true);
+                  }}
+                  onFocus={() => { if (lureQuery.trim()) setLureOpen(true); }}
+                  placeholder={loadingOptions ? 'Carregando...' : 'Digite o nome da isca...'}
+                  disabled={loadingOptions}
+                  className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+                />
+                {lureOpen && filteredLures.length > 0 && (
+                  <ul className="absolute z-20 mt-1 w-full rounded-xl border border-border bg-white shadow-lg overflow-hidden">
+                    {filteredLures.map((l) => (
+                      <li
+                        key={l.id}
+                        onMouseDown={() => {
+                          setLureQuery(l.name);
+                          setFormData((prev) => ({ ...prev, lure_id: l.id }));
+                          setLureOpen(false);
+                        }}
+                        className="cursor-pointer px-4 py-2.5 text-sm hover:bg-primary/10 hover:text-primary transition-colors"
+                      >
+                        {l.name}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </div>
 
             <div>
