@@ -39,7 +39,7 @@ export default function IntroPage() {
     setSigningIn(true);
     setError(null);
     const supabase = getSupabaseBrowserClient();
-    const redirectTo = `${window.location.origin}/map`;
+    const redirectTo = `${window.location.origin}/auth/callback?next=/map`;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo },
