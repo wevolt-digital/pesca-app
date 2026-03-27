@@ -124,7 +124,7 @@ export default function OnboardingPage() {
               {/* Nome */}
               <div className="mb-5">
                 <label className="block text-white/70 text-xs font-semibold uppercase tracking-widest mb-2">
-                  Nome completo
+                  Nome
                 </label>
                 <input
                   type="text"
