@@ -1,14 +1,23 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import SectionHeader from '@/components/SectionHeader';
-import { Camera, Fish, MapPin } from 'lucide-react';
+import { Camera, Fish, Loader2, MapPin, Navigation } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+
+interface NominatimResult {
+  place_id: number;
+  display_name: string;
+  lat: string;
+  lon: string;
+  type: string;
+  class: string;
+}
 
 interface SpeciesOption {
   id: string;
@@ -43,6 +52,16 @@ export default function RegisterPage() {
   const [lureOpen, setLureOpen] = useState(false);
   const lureRef = useRef<HTMLDivElement>(null);
 
+  // Geocodificação de local
+  const [locationQuery, setLocationQuery] = useState('');
+  const [locationSuggestions, setLocationSuggestions] = useState<NominatimResult[]>([]);
+  const [locationOpen, setLocationOpen] = useState(false);
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [gpsLoading, setGpsLoading] = useState(false);
+  const [coordinates, setCoordinates] = useState<{ lat: number | null; lng: number | null }>({ lat: null, lng: null });
+  const locationRef = useRef<HTMLDivElement>(null);
+  const nominatimDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const filteredLures = lureQuery.trim().length > 0
     ? lures.filter((l) =>
         l.name.toLowerCase().includes(lureQuery.toLowerCase())
@@ -58,10 +77,82 @@ export default function RegisterPage() {
       if (lureRef.current && !lureRef.current.contains(e.target as Node)) {
         setLureOpen(false);
       }
+      if (locationRef.current && !locationRef.current.contains(e.target as Node)) {
+        setLocationOpen(false);
+      }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Busca geocodificação com debounce
+  const searchLocation = useCallback((query: string) => {
+    if (nominatimDebounceRef.current) clearTimeout(nominatimDebounceRef.current);
+
+    if (query.trim().length < 3) {
+      setLocationSuggestions([]);
+      setLocationOpen(false);
+      return;
+    }
+
+    nominatimDebounceRef.current = setTimeout(async () => {
+      setLocationLoading(true);
+      try {
+        const params = new URLSearchParams({
+          q: query,
+          format: 'json',
+          limit: '6',
+          countrycodes: 'br',
+          addressdetails: '0',
+        });
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {
+          headers: { 'Accept-Language': 'pt-BR,pt;q=0.9' },
+        });
+        const data: NominatimResult[] = await res.json();
+        setLocationSuggestions(data);
+        setLocationOpen(data.length > 0);
+      } catch {
+        setLocationSuggestions([]);
+      } finally {
+        setLocationLoading(false);
+      }
+    }, 500);
+  }, []);
+
+  // GPS: pega localização atual e faz geocodificação reversa
+  const handleUseGPS = () => {
+    if (!navigator.geolocation) return;
+    setGpsLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try {
+          const params = new URLSearchParams({
+            lat: String(latitude),
+            lon: String(longitude),
+            format: 'json',
+          });
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?${params}`, {
+            headers: { 'Accept-Language': 'pt-BR,pt;q=0.9' },
+          });
+          const data = await res.json();
+          const name: string = data.display_name ?? `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+          setLocationQuery(name);
+          setCoordinates({ lat: latitude, lng: longitude });
+          setFormData((prev) => ({ ...prev, location: name }));
+        } catch {
+          const fallback = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+          setLocationQuery(fallback);
+          setCoordinates({ lat: latitude, lng: longitude });
+          setFormData((prev) => ({ ...prev, location: fallback }));
+        } finally {
+          setGpsLoading(false);
+        }
+      },
+      () => setGpsLoading(false),
+      { timeout: 10000 }
+    );
+  };
 
   // DEV ONLY: sign-in automático com usuário de teste se não houver sessão ativa
   useEffect(() => {
@@ -161,8 +252,8 @@ export default function RegisterPage() {
         length: formData.length ? parseFloat(formData.length) : null,
         lure_id: formData.lure_id || null,
         bait_description: selectedLure?.name ?? lureQuery.trim(),
-        lat: -23.55,
-        lng: -46.63,
+        lat: coordinates.lat ?? undefined,
+        lng: coordinates.lng ?? undefined,
         location_name: formData.location,
         notes: formData.notes || null,
         photo_url: null,
@@ -184,6 +275,8 @@ export default function RegisterPage() {
       });
       setSpeciesQuery('');
       setLureQuery('');
+      setLocationQuery('');
+      setCoordinates({ lat: null, lng: null });
     }
   };
 
@@ -321,16 +414,67 @@ export default function RegisterPage() {
               <Label className="mb-2 block text-sm font-semibold">
                 Local da Pesca
               </Label>
-              <div className="relative">
-                <MapPin className="pointer-events-none absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
-                <Input
-                  type="text"
-                  name="location"
-                  placeholder="Ex: Rio Tietê, Barra Bonita"
-                  value={formData.location}
-                  onChange={handleChange}
-                  className="rounded-xl pl-10"
-                />
+              <div ref={locationRef} className="relative">
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <MapPin className="pointer-events-none absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
+                    {locationLoading && (
+                      <Loader2 className="pointer-events-none absolute right-3 top-3.5 h-4 w-4 animate-spin text-muted-foreground" />
+                    )}
+                    <input
+                      type="text"
+                      value={locationQuery}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setLocationQuery(val);
+                        setFormData((prev) => ({ ...prev, location: val }));
+                        setCoordinates({ lat: null, lng: null });
+                        searchLocation(val);
+                      }}
+                      onFocus={() => { if (locationSuggestions.length > 0) setLocationOpen(true); }}
+                      placeholder="Ex: Rio Araguaia, Barra do Garças"
+                      className="w-full rounded-xl border border-border px-4 py-3 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleUseGPS}
+                    disabled={gpsLoading}
+                    title="Usar minha localização atual"
+                    className="flex items-center justify-center rounded-xl border border-border bg-white px-3 transition-colors hover:bg-primary/10 hover:border-primary disabled:opacity-50"
+                  >
+                    {gpsLoading
+                      ? <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                      : <Navigation className="h-5 w-5 text-primary" />
+                    }
+                  </button>
+                </div>
+
+                {coordinates.lat !== null && (
+                  <p className="mt-1.5 flex items-center gap-1 text-xs text-green-600">
+                    <MapPin className="h-3 w-3" />
+                    {coordinates.lat.toFixed(5)}, {coordinates.lng!.toFixed(5)}
+                  </p>
+                )}
+
+                {locationOpen && locationSuggestions.length > 0 && (
+                  <ul className="absolute z-20 mt-1 w-full rounded-xl border border-border bg-white shadow-lg overflow-hidden">
+                    {locationSuggestions.map((item) => (
+                      <li
+                        key={item.place_id}
+                        onMouseDown={() => {
+                          setLocationQuery(item.display_name);
+                          setCoordinates({ lat: parseFloat(item.lat), lng: parseFloat(item.lon) });
+                          setFormData((prev) => ({ ...prev, location: item.display_name }));
+                          setLocationOpen(false);
+                        }}
+                        className="cursor-pointer px-4 py-2.5 text-sm hover:bg-primary/10 hover:text-primary transition-colors border-b border-border/50 last:border-0"
+                      >
+                        <span className="block truncate">{item.display_name}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </div>
 

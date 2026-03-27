@@ -158,8 +158,8 @@ export interface Database {
           length?: number | null
           lure_id?: string | null
           bait_description: string
-          lat: number
-          lng: number
+          lat?: number | null
+          lng?: number | null
           location_name: string
           fishing_spot_id?: string | null
           photo_url?: string | null
