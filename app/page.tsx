@@ -66,6 +66,17 @@ export default function IntroPage() {
         <source src="/fishintel.mp4" type="video/mp4" />
       </video>
 
+      {/* Vídeo de fundo — mobile */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover opacity-30 md:hidden"
+      >
+        <source src="/fishintel-mobile.mp4" type="video/mp4" />
+      </video>
+
       {/* Overlay escuro para manter contraste */}
       <div className="absolute inset-0 bg-[#0a1628]/60" />
       {/* Conteúdo */}
