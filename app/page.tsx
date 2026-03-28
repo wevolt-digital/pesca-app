@@ -54,7 +54,23 @@ export default function IntroPage() {
   if (checking) return null;
 
   return (
-    <div className="min-h-screen bg-[#0a1628] flex flex-col items-center justify-center px-6">
+    <div className="relative min-h-screen bg-[#0a1628] flex flex-col items-center justify-center px-6 overflow-hidden">
+      {/* Vídeo de fundo — desktop */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover opacity-30 hidden md:block"
+      >
+        <source src="/fishintel.mp4" type="video/mp4" />
+      </video>
+
+      {/* Overlay escuro para manter contraste */}
+      <div className="absolute inset-0 bg-[#0a1628]/60" />
+      {/* Conteúdo */}
+      <div className="relative z-10 w-full flex flex-col items-center">
+
       {/* Logo */}
       <motion.div
         initial={{ scale: 0.6, opacity: 0 }}
@@ -114,6 +130,8 @@ export default function IntroPage() {
         </button>
         {error && <p className="text-red-400 text-sm text-center">{error}</p>}
       </motion.div>
+
+      </div>
     </div>
   );
 }
