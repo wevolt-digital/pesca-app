@@ -60,7 +60,7 @@ export default function IntroPage() {
         initial={{ scale: 0.6, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        className="text-center"
+        className="w-full flex justify-center"
       >
         <Image
           src="/logo-fishintel.svg"
@@ -76,9 +76,9 @@ export default function IntroPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.7, duration: 0.6 }}
-        className="text-white/90 text-xl font-semibold text-center mt-8 leading-snug"
+        className="w-full text-white/90 text-xl font-semibold text-center mt-8 leading-snug"
       >
-        A maior inteligência de pesca<br />esportiva do Brasil.
+        A maior inteligência de pesca esportiva do Brasil.
       </motion.p>
 
       {/* Frase secundária */}
@@ -86,9 +86,9 @@ export default function IntroPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.95, duration: 0.5 }}
-        className="text-white/50 text-sm text-center mt-3 mb-14 leading-relaxed"
+        className="w-full text-white/50 text-sm text-center mt-3 mb-14 leading-relaxed"
       >
-        Uma base completa de locais e capturas<br />para levar sua pescaria ao próximo nível.
+        Uma base completa de locais e capturas para levar sua pescaria ao próximo nível.
       </motion.p>
 
       {/* Botão Google */}
