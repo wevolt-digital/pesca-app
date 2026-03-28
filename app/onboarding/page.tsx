@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, ArrowRight, ChevronRight } from 'lucide-react';
+import Image from 'next/image';
 
 const TOTAL_STEPS = 2;
 
@@ -78,10 +79,7 @@ export default function OnboardingPage() {
     <div className="min-h-screen bg-[#0a1628] flex flex-col px-6 pt-14 pb-10">
       {/* Header: logo + step indicator */}
       <div className="flex items-center justify-between mb-10">
-        <div>
-          <span className="text-white text-xl font-black tracking-tight">Fishing</span>
-          <span className="text-primary text-xl font-black tracking-tight">BR</span>
-        </div>
+        <Image src="/logo-fishintel.svg" alt="Fishintel" width={120} height={40} priority />
         <div className="flex items-center gap-1.5">
           {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
             <div
@@ -255,7 +253,7 @@ export default function OnboardingPage() {
                     onClick={handleFinish}
                     className="w-full text-white/40 text-sm font-medium py-2 hover:text-white/60 transition-colors"
                   >
-                    Pular por agora
+                    Pular esta etapa
                   </button>
                 )}
               </div>
