@@ -469,11 +469,11 @@ export default function RegisterPage() {
                 Local da Pesca
               </Label>
               <div ref={locationRef} className="relative">
-                <div className="flex gap-2">
+                <div className="flex items-stretch gap-2">
                   <div className="relative flex-1">
-                    <MapPin className="pointer-events-none absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
+                    <MapPin className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     {locationLoading && (
-                      <Loader2 className="pointer-events-none absolute right-3 top-3.5 h-4 w-4 animate-spin text-muted-foreground" />
+                      <Loader2 className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
                     )}
                     <input
                       type="text"
@@ -487,7 +487,7 @@ export default function RegisterPage() {
                       }}
                       onFocus={() => { if (locationSuggestions.length > 0) setLocationOpen(true); }}
                       placeholder="Ex: Rio Araguaia, Barra do Garças"
-                      className="w-full rounded-xl border border-border px-4 py-3 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="h-full w-full rounded-xl border border-border px-4 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                   </div>
                   <button
