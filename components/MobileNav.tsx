@@ -41,7 +41,7 @@ export default function MobileNav() {
                   </div>
                   <span
                     className={cn(
-                      'text-[11px] font-medium leading-none',
+                      'text-[11px] font-medium leading-none pb-2',
                       isActive ? 'text-primary' : 'text-muted-foreground'
                     )}
                   >
