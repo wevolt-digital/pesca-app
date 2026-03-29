@@ -9,12 +9,13 @@ import { motion } from 'framer-motion';
 export default function FeedPage() {
   return (
     <div className="min-h-screen bg-background md:pt-20">
-      <div className="sticky top-0 bg-white border-b border-border z-10 shadow-sm md:hidden">
+      <div className="sticky top-0 bg-[#091628] z-10 md:hidden">
         <div className="max-w-2xl mx-auto px-4 py-4">
           <SectionHeader
             title="Feed"
             subtitle="Acompanhe as pescarias da comunidade"
             icon={Zap}
+            dark
           />
         </div>
       </div>

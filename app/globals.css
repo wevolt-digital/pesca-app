@@ -4,34 +4,25 @@
 
 @layer base {
   :root {
-    --water-blue: 203 74% 22%;
-    --river-teal: 170 67% 35%;
-    --fishing-orange: 27 86% 68%;
-    --fresh-aqua: 173 65% 47%;
-    --sunset-coral: 16 100% 66%;
-    --bg-light: 210 17% 98%;
-    --surface-white: 0 0% 100%;
-    --text-dark: 210 24% 16%;
-
     --background: 210 17% 98%;
-    --foreground: 210 24% 16%;
+    --foreground: 215 63% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 210 24% 16%;
+    --card-foreground: 215 63% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 210 24% 16%;
+    --popover-foreground: 215 63% 10%;
     --primary: 173 69% 35%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 170 67% 35%;
+    --secondary: 215 63% 10%;
     --secondary-foreground: 0 0% 98%;
     --muted: 210 17% 95%;
     --muted-foreground: 210 10% 45%;
-    --accent: 27 86% 68%;
-    --accent-foreground: 210 24% 16%;
+    --accent: 173 69% 35%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 210 17% 90%;
     --input: 210 17% 90%;
-    --ring: 203 74% 22%;
+    --ring: 173 69% 35%;
     --radius: 1rem;
   }
 }

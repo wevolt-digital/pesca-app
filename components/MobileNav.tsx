@@ -23,7 +23,7 @@ export default function MobileNav() {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-white shadow-lg md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#091628] md:hidden">
         <div className="grid grid-cols-5 items-end mobile-nav-safe px-2 py-2">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -36,13 +36,13 @@ export default function MobileNav() {
                   href={item.href}
                   className="relative flex flex-col items-center justify-end"
                 >
-                  <div className="mb-1 flex h-14 w-14 items-center justify-center rounded-full border-4 border-white bg-primary shadow-xl transition-transform hover:scale-105">
+                  <div className="mb-1 flex h-14 w-14 items-center justify-center rounded-full border-4 border-[#091628] bg-primary shadow-xl transition-transform hover:scale-105">
                     <Icon className="h-6 w-6 text-white" />
                   </div>
                   <span
                     className={cn(
                       'text-[11px] font-medium leading-none',
-                      isActive ? 'text-primary' : 'text-muted-foreground'
+                      isActive ? 'text-primary' : 'text-white/40'
                     )}
                   >
                     {item.label}
@@ -60,13 +60,13 @@ export default function MobileNav() {
                 <Icon
                   className={cn(
                     'h-6 w-6 transition-colors',
-                    isActive ? 'text-primary' : 'text-muted-foreground'
+                    isActive ? 'text-primary' : 'text-white/40'
                   )}
                 />
                 <span
                   className={cn(
                     'mt-1 text-xs font-medium transition-colors',
-                    isActive ? 'text-primary' : 'text-muted-foreground'
+                    isActive ? 'text-primary' : 'text-white/40'
                   )}
                 >
                   {item.label}
@@ -77,7 +77,7 @@ export default function MobileNav() {
         </div>
       </nav>
 
-      <nav className="fixed left-1/2 top-4 z-40 hidden -translate-x-1/2 rounded-full border border-border bg-white/95 px-3 py-2 shadow-lg backdrop-blur md:block">
+      <nav className="fixed left-1/2 top-4 z-40 hidden -translate-x-1/2 rounded-full bg-[#091628] px-3 py-2 shadow-lg md:block">
         <div className="flex items-center gap-1">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -103,8 +103,8 @@ export default function MobileNav() {
                 className={cn(
                   'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors',
                   isActive
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                    ? 'text-primary'
+                    : 'text-white/40 hover:text-white/70'
                 )}
               >
                 <Icon className="h-4 w-4" />
