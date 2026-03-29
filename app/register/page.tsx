@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useId } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -63,6 +64,8 @@ export default function RegisterPage() {
   const locationRef = useRef<HTMLDivElement>(null);
   const nominatimDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showMapPicker, setShowMapPicker] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const { toast } = useToast();
 
   // Upload de foto
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -262,15 +265,19 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (submitting) return;
+
     if (!userId) {
       console.error('Usuário não autenticado');
       return;
     }
 
     if ((!formData.species_id && !speciesQuery.trim()) || !formData.weight) {
-      console.error('Preencha espécie e peso');
+      toast({ title: 'Campos obrigatórios', description: 'Preencha a espécie e o peso.', variant: 'destructive' });
       return;
     }
+
+    setSubmitting(true);
 
     const selectedSpecies = species.find((s) => s.id === formData.species_id);
     const selectedLure = lures.find((l) => l.id === formData.lure_id);
@@ -315,8 +322,9 @@ export default function RegisterPage() {
 
     if (error) {
       console.error('Erro ao registrar captura:', error);
+      toast({ title: 'Erro ao registrar', description: 'Tente novamente em instantes.', variant: 'destructive' });
     } else {
-      console.log('Captura registrada com sucesso:', data);
+      toast({ title: 'Captura registrada!', description: 'Sua pesca foi salva com sucesso.' });
       setFormData({
         species_id: '',
         weight: '0',
@@ -331,6 +339,8 @@ export default function RegisterPage() {
       setCoordinates({ lat: null, lng: null });
       handleRemovePhoto();
     }
+
+    setSubmitting(false);
   };
 
   return (
@@ -615,9 +625,14 @@ export default function RegisterPage() {
           >
             <Button
               type="submit"
-              className="w-full rounded-xl bg-primary py-3 font-semibold text-white hover:bg-primary/90"
+              disabled={submitting}
+              className="w-full rounded-xl bg-primary py-3 font-semibold text-white hover:bg-primary/90 disabled:opacity-70"
             >
-              Registrar Pesca
+              {submitting ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Registrando...</>
+              ) : (
+                'Registrar Pesca'
+              )}
             </Button>
           </motion.div>
         </form>

@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import MobileNav from '@/components/MobileNav';
 import ReportButton from '@/components/ReportButton';
+import { Toaster } from '@/components/ui/toaster';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -39,6 +40,7 @@ export default function RootLayout({
         <main className="pb-24 md:pb-0">{children}</main>
         <MobileNav />
         <ReportButton />
+        <Toaster />
       </body>
     </html>
   );

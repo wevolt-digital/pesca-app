@@ -24,6 +24,7 @@ interface CatchRow {
   location_name: string;
   bait_description: string;
   caught_at: string;
+  photo_url: string | null;
 }
 
 export default function ProfilePage() {
@@ -40,7 +41,7 @@ export default function ProfilePage() {
 
       const [{ data: prof }, { data: catchRows }] = await Promise.all([
         supabase.from('profiles').select('id, name, username, avatar_url, bio').eq('id', user.id).single(),
-        supabase.from('catches').select('id, species_name, weight, location_name, bait_description, caught_at').eq('user_id', user.id).order('caught_at', { ascending: false }),
+        supabase.from('catches').select('id, species_name, weight, location_name, bait_description, caught_at, photo_url').eq('user_id', user.id).order('caught_at', { ascending: false }),
       ]);
 
       setProfile(prof ?? { id: user.id, name: user.email ?? '', username: '', avatar_url: null, bio: null });
@@ -146,16 +147,22 @@ export default function ProfilePage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 + i * 0.05 }}
-                className="bg-white rounded-2xl shadow-sm p-4 flex items-center justify-between"
+                className="bg-white rounded-2xl shadow-sm overflow-hidden"
               >
-                <div>
-                  <p className="font-semibold text-foreground">{c.species_name}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{c.location_name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(c.caught_at).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' })}
-                  </p>
+                {c.photo_url && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={c.photo_url} alt={c.species_name} className="w-full h-40 object-cover" />
+                )}
+                <div className="p-4 flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-foreground">{c.species_name}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{c.location_name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(c.caught_at).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </p>
+                  </div>
+                  <span className="text-primary font-bold text-lg">{c.weight} kg</span>
                 </div>
-                <span className="text-primary font-bold text-lg">{c.weight} kg</span>
               </motion.div>
             ))}
           </div>
