@@ -106,10 +106,10 @@ export default function ProfilePage() {
           transition={{ delay: 0.1 }}
           className="grid grid-cols-2 md:grid-cols-4 gap-3"
         >
-          <StatsCard title="Pescas" value={catches.length} icon={Fish} gradient="water" />
-          <StatsCard title="Espécies" value={uniqueSpecies} icon={Zap} gradient="sunset" />
+          <StatsCard title="Pescas" value={catches.length} icon={Fish} gradient="teal" />
+          <StatsCard title="Espécies" value={uniqueSpecies} icon={Zap} gradient="teal" />
           <StatsCard title="Peso Total" value={`${totalWeight.toFixed(1)} kg`} icon={Trophy} gradient="teal" />
-          <StatsCard title="Locais" value={new Set(catches.map(c => c.location_name)).size} icon={MapPin} gradient="water" />
+          <StatsCard title="Locais" value={new Set(catches.map(c => c.location_name)).size} icon={MapPin} gradient="teal" />
         </motion.div>
 
         {/* Maior captura */}
