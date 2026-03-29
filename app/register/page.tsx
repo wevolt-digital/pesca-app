@@ -501,7 +501,7 @@ export default function RegisterPage() {
                       ? <Loader2 className="h-5 w-5 animate-spin text-primary" />
                       : <Navigation className="h-5 w-5 text-primary" />
                     }
-                    <span className="text-[10px] font-medium text-muted-foreground leading-none">GPS</span>
+                    <span className="text-[10px] font-medium text-muted-foreground leading-none text-center">Localização<br/>atual</span>
                   </button>
                   <button
                     type="button"
@@ -510,7 +510,7 @@ export default function RegisterPage() {
                     className="flex flex-col items-center justify-center gap-0.5 rounded-xl border border-border bg-white px-2.5 py-1.5 transition-colors hover:bg-primary/10 hover:border-primary"
                   >
                     <Map className="h-5 w-5 text-primary" />
-                    <span className="text-[10px] font-medium text-muted-foreground leading-none">Mapa</span>
+                    <span className="text-[10px] font-medium text-muted-foreground leading-none text-center">Fixar<br/>ponto</span>
                   </button>
                 </div>
 
