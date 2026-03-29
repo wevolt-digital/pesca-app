@@ -23,6 +23,18 @@ export default function IntroPage() {
   const [signingIn, setSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Trava scroll do body nessa página (evita faixa branca no mobile)
+  useEffect(() => {
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    document.body.style.background = '#0a1628';
+    return () => {
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+      document.body.style.background = '';
+    };
+  }, []);
+
   // Redireciona automaticamente se já houver sessão ativa
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
