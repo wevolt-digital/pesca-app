@@ -16,6 +16,12 @@ const navItems = [
   { href: '/profile', icon: User, label: 'Perfil' },
 ];
 
+function blurActiveElement() {
+  if (document.activeElement instanceof HTMLElement) {
+    document.activeElement.blur();
+  }
+}
+
 export default function MobileNav() {
   const pathname = usePathname();
 
@@ -34,6 +40,7 @@ export default function MobileNav() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onPointerDown={blurActiveElement}
                   className="relative flex flex-col items-center justify-end"
                 >
                   <div className="mb-1 flex h-14 w-14 items-center justify-center rounded-full border-4 border-white bg-primary shadow-xl transition-transform hover:scale-105">
@@ -55,6 +62,7 @@ export default function MobileNav() {
               <Link
                 key={item.href}
                 href={item.href}
+                onPointerDown={blurActiveElement}
                 className="flex flex-col items-center justify-center py-2"
               >
                 <Icon

@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useId } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import SectionHeader from '@/components/SectionHeader';
-import { Camera, Fish, Loader2, MapPin, Navigation } from 'lucide-react';
+import MapPickerModal from '@/components/MapPickerModal';
+import { Camera, Fish, Loader2, Map, MapPin, Navigation } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 
@@ -61,6 +62,13 @@ export default function RegisterPage() {
   const [coordinates, setCoordinates] = useState<{ lat: number | null; lng: number | null }>({ lat: null, lng: null });
   const locationRef = useRef<HTMLDivElement>(null);
   const nominatimDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [showMapPicker, setShowMapPicker] = useState(false);
+
+  // Upload de foto
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const photoInputId = useId();
 
   const filteredLures = lureQuery.trim().length > 0
     ? lures.filter((l) =>
@@ -84,6 +92,32 @@ export default function RegisterPage() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowed.includes(file.type)) {
+      alert('Formato não suportado. Use JPG, PNG ou WebP.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('A foto deve ter no máximo 5 MB.');
+      return;
+    }
+
+    if (photoPreview) URL.revokeObjectURL(photoPreview);
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  };
+
+  const handleRemovePhoto = () => {
+    if (photoPreview) URL.revokeObjectURL(photoPreview);
+    setPhotoFile(null);
+    setPhotoPreview(null);
+    if (photoInputRef.current) photoInputRef.current.value = '';
+  };
 
   // Busca geocodificação com debounce
   const searchLocation = useCallback((query: string) => {
@@ -242,6 +276,24 @@ export default function RegisterPage() {
     const selectedLure = lures.find((l) => l.id === formData.lure_id);
 
     const supabase = getSupabaseBrowserClient();
+
+    let uploadedPhotoUrl: string | null = null;
+    if (photoFile) {
+      const ext = photoFile.name.split('.').pop() ?? 'jpg';
+      const path = `${userId}/${crypto.randomUUID()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('catch-photos')
+        .upload(path, photoFile, { contentType: photoFile.type });
+      if (uploadError) {
+        console.error('Erro ao fazer upload da foto:', uploadError);
+      } else {
+        const { data: urlData } = supabase.storage
+          .from('catch-photos')
+          .getPublicUrl(path);
+        uploadedPhotoUrl = urlData.publicUrl;
+      }
+    }
+
     const { data, error } = await supabase
       .from('catches')
       .insert({
@@ -256,7 +308,7 @@ export default function RegisterPage() {
         lng: coordinates.lng ?? undefined,
         location_name: formData.location,
         notes: formData.notes || null,
-        photo_url: null,
+        photo_url: uploadedPhotoUrl,
       })
       .select()
       .single();
@@ -277,6 +329,7 @@ export default function RegisterPage() {
       setLureQuery('');
       setLocationQuery('');
       setCoordinates({ lat: null, lng: null });
+      handleRemovePhoto();
     }
   };
 
@@ -442,12 +495,22 @@ export default function RegisterPage() {
                     onClick={handleUseGPS}
                     disabled={gpsLoading}
                     title="Usar minha localização atual"
-                    className="flex items-center justify-center rounded-xl border border-border bg-white px-3 transition-colors hover:bg-primary/10 hover:border-primary disabled:opacity-50"
+                    className="flex flex-col items-center justify-center gap-0.5 rounded-xl border border-border bg-white px-2.5 py-1.5 transition-colors hover:bg-primary/10 hover:border-primary disabled:opacity-50"
                   >
                     {gpsLoading
                       ? <Loader2 className="h-5 w-5 animate-spin text-primary" />
                       : <Navigation className="h-5 w-5 text-primary" />
                     }
+                    <span className="text-[10px] font-medium text-muted-foreground leading-none">GPS</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowMapPicker(true)}
+                    title="Marcar no mapa"
+                    className="flex flex-col items-center justify-center gap-0.5 rounded-xl border border-border bg-white px-2.5 py-1.5 transition-colors hover:bg-primary/10 hover:border-primary"
+                  >
+                    <Map className="h-5 w-5 text-primary" />
+                    <span className="text-[10px] font-medium text-muted-foreground leading-none">Mapa</span>
                   </button>
                 </div>
 
@@ -483,12 +546,51 @@ export default function RegisterPage() {
               <Label className="mb-2 block text-sm font-semibold">
                 Foto (opcional)
               </Label>
-              <div className="cursor-pointer rounded-xl border-2 border-dashed border-border p-6 text-center transition-colors hover:bg-accent/5">
-                <Camera className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">
-                  Clique para fazer upload de uma foto
-                </p>
-              </div>
+              <input
+                ref={photoInputRef}
+                id={photoInputId}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="sr-only"
+                onChange={handlePhotoChange}
+              />
+              {photoPreview ? (
+                <div className="relative overflow-hidden rounded-xl border border-border">
+                  <img
+                    src={photoPreview}
+                    alt="Preview da captura"
+                    className="h-48 w-full object-cover"
+                  />
+                  <div className="absolute inset-0 flex items-end justify-between gap-2 bg-gradient-to-t from-black/50 to-transparent p-3">
+                    <label
+                      htmlFor={photoInputId}
+                      className="cursor-pointer rounded-lg bg-white/90 px-3 py-1.5 text-xs font-semibold text-foreground"
+                    >
+                      Trocar foto
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleRemovePhoto}
+                      className="rounded-lg bg-white/90 px-3 py-1.5 text-xs font-semibold text-destructive"
+                    >
+                      Remover
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <label
+                  htmlFor={photoInputId}
+                  className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border p-6 text-center transition-colors hover:bg-accent/5"
+                >
+                  <Camera className="mb-2 h-8 w-8 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">
+                    Toque para adicionar uma foto
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground/70">
+                    JPG, PNG ou WebP · máx. 5 MB
+                  </p>
+                </label>
+              )}
             </div>
 
             <div>
@@ -520,6 +622,23 @@ export default function RegisterPage() {
           </motion.div>
         </form>
       </div>
+
+      {showMapPicker && (
+        <MapPickerModal
+          initialCoords={
+            coordinates.lat !== null && coordinates.lng !== null
+              ? { lat: coordinates.lat, lng: coordinates.lng }
+              : null
+          }
+          onConfirm={(coords, locationName) => {
+            setCoordinates(coords);
+            setLocationQuery(locationName);
+            setFormData((prev) => ({ ...prev, location: locationName }));
+            setShowMapPicker(false);
+          }}
+          onClose={() => setShowMapPicker(false)}
+        />
+      )}
     </div>
   );
 }
