@@ -54,7 +54,7 @@ export default function IntroPage() {
   if (checking) return null;
 
   return (
-    <div className="relative min-h-screen bg-[#0a1628] flex flex-col items-center justify-center px-6 overflow-hidden">
+    <div className="relative h-screen bg-[#0a1628] flex flex-col items-center justify-center px-6 overflow-hidden" style={{ height: '100dvh' }}>
       {/* Vídeo de fundo — desktop */}
       <video
         autoPlay
