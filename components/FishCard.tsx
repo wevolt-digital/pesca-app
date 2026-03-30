@@ -46,7 +46,7 @@ export default function FishCard({ catchData }: FishCardProps) {
       </div>
 
       {catchData.photo ? (
-        <div className="relative aspect-[4/3] bg-gray-100">
+        <div className="relative aspect-[3/4] bg-gray-100">
           <Image
             src={catchData.photo}
             alt={catchData.species}
