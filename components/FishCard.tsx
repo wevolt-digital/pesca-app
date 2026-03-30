@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { Catch } from '@/types';
 import UserAvatar from './UserAvatar';
-import { Heart, MessageCircle, MapPin, Scale, Ruler } from 'lucide-react';
+import { Heart, MessageCircle, MapPin, Scale, Ruler, Fish } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 
@@ -45,14 +45,20 @@ export default function FishCard({ catchData }: FishCardProps) {
         </div>
       </div>
 
-      <div className="relative h-80 bg-gray-100">
-        <Image
-          src={catchData.photo}
-          alt={catchData.species}
-          fill
-          className="object-cover"
-        />
-      </div>
+      {catchData.photo ? (
+        <div className="relative h-80 bg-gray-100">
+          <Image
+            src={catchData.photo}
+            alt={catchData.species}
+            fill
+            className="object-cover"
+          />
+        </div>
+      ) : (
+        <div className="h-32 bg-primary/5 flex items-center justify-center">
+          <Fish className="h-10 w-10 text-primary/20" />
+        </div>
+      )}
 
       <div className="p-4 space-y-3">
         <div className="flex items-center justify-between">
