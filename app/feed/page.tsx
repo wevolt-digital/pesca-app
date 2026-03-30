@@ -68,14 +68,14 @@ export default function FeedPage() {
           id, species_name, weight, length, bait_description,
           lat, lng, location_name, photo_url, notes, caught_at,
           likes_count, comments_count,
-          profiles ( id, name, username, avatar_url )
+          profiles!catches_user_id_fkey ( id, name, username, avatar_url )
         `)
         .order('caught_at', { ascending: false });
 
       if (error) {
         console.error('Erro ao buscar feed:', error);
       } else {
-        setCatches((data as CatchRow[]).map(rowToCatch));
+        setCatches((data as unknown as CatchRow[]).map(rowToCatch));
       }
       setLoading(false);
     }
