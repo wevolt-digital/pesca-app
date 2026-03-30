@@ -151,7 +151,7 @@ export default function ProfilePage() {
               >
                 {c.photo_url && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={c.photo_url} alt={c.species_name} className="w-full h-40 object-cover" />
+                  <img src={c.photo_url} alt={c.species_name} className="w-full aspect-[4/3] object-cover" />
                 )}
                 <div className="p-4 flex items-center justify-between">
                   <div>
