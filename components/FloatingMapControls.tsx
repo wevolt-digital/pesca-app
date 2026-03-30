@@ -21,7 +21,7 @@ export default function FloatingMapControls({
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className={cn('fixed flex flex-col gap-3 z-30 md:right-6 md:bottom-6 right-4 bottom-24', className)}
+      className={cn('fixed flex flex-col gap-3 z-30 md:left-6 md:bottom-6 left-4 bottom-24', className)}
     >
       {onRecenter && (
         <motion.button
