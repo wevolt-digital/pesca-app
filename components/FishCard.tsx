@@ -80,7 +80,7 @@ export default function FishCard({ catchData }: FishCardProps) {
           <h3 className="font-bold text-lg text-primary">{catchData.species}</h3>
 
           <div className="flex flex-wrap gap-2 mt-2">
-            <div className="flex items-center gap-1.5 bg-accent/10 text-accent-foreground px-3 py-1.5 rounded-full">
+            <div className="flex items-center gap-1.5 bg-primary/15 text-primary px-3 py-1.5 rounded-full">
               <Scale className="w-4 h-4" />
               <span className="text-sm font-semibold">{catchData.weight} kg</span>
             </div>
