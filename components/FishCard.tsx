@@ -80,19 +80,19 @@ export default function FishCard({ catchData }: FishCardProps) {
           <h3 className="font-bold text-lg text-primary">{catchData.species}</h3>
 
           <div className="flex flex-wrap gap-2 mt-2">
-            <div className="flex items-center gap-1.5 bg-primary/15 text-primary px-3 py-1.5 rounded-full">
+            <div className="flex items-center gap-1.5 bg-blue-500 text-white px-3 py-1.5 rounded-full">
               <Scale className="w-4 h-4" />
               <span className="text-sm font-semibold">{catchData.weight} kg</span>
             </div>
 
             {catchData.length && (
-              <div className="flex items-center gap-1.5 bg-secondary/10 text-secondary px-3 py-1.5 rounded-full">
+              <div className="flex items-center gap-1.5 bg-amber-500 text-white px-3 py-1.5 rounded-full">
                 <Ruler className="w-4 h-4" />
                 <span className="text-sm font-semibold">{catchData.length} cm</span>
               </div>
             )}
 
-            <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1.5 rounded-full">
+            <div className="flex items-center gap-1.5 bg-emerald-600 text-white px-3 py-1.5 rounded-full">
               <span className="text-sm font-semibold">{catchData.bait}</span>
             </div>
           </div>
