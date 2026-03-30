@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import SectionHeader from '@/components/SectionHeader';
 import MapPickerModal from '@/components/MapPickerModal';
+import ImageCropModal from '@/components/ImageCropModal';
 import { Camera, Fish, Loader2, Map, MapPin, Navigation } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
@@ -70,6 +71,7 @@ export default function RegisterPage() {
   // Upload de foto
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const photoInputId = useId();
 
@@ -110,9 +112,19 @@ export default function RegisterPage() {
       return;
     }
 
+    // Abre o modal de crop em vez de usar a imagem diretamente
+    const objectUrl = URL.createObjectURL(file);
+    setCropSrc(objectUrl);
+    if (photoInputRef.current) photoInputRef.current.value = '';
+  };
+
+  const handleCropConfirm = (blob: Blob) => {
     if (photoPreview) URL.revokeObjectURL(photoPreview);
-    setPhotoFile(file);
-    setPhotoPreview(URL.createObjectURL(file));
+    if (cropSrc) URL.revokeObjectURL(cropSrc);
+    const croppedFile = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
+    setPhotoFile(croppedFile);
+    setPhotoPreview(URL.createObjectURL(croppedFile));
+    setCropSrc(null);
   };
 
   const handleRemovePhoto = () => {
@@ -637,6 +649,17 @@ export default function RegisterPage() {
           </motion.div>
         </form>
       </div>
+
+      {cropSrc && (
+        <ImageCropModal
+          imageSrc={cropSrc}
+          onConfirm={handleCropConfirm}
+          onClose={() => {
+            URL.revokeObjectURL(cropSrc);
+            setCropSrc(null);
+          }}
+        />
+      )}
 
       {showMapPicker && (
         <MapPickerModal
