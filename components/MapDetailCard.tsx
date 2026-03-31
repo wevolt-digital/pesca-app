@@ -66,9 +66,6 @@ export default function MapDetailCard({ data, type, onClose }: MapDetailCardProp
               </div>
             </div>
 
-            <Button className="w-full mt-4 bg-gradient-water text-white">
-              Ver Detalhes
-            </Button>
           </div>
         </div>
       </motion.div>
