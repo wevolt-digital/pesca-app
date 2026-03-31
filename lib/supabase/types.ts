@@ -161,7 +161,7 @@ export interface Database {
           user_id: string
           species_id?: string | null
           species_name: string
-          weight: number
+          weight?: number | null
           length?: number | null
           lure_id?: string | null
           bait_description: string
