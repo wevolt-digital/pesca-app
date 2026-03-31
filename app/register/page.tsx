@@ -256,8 +256,8 @@ export default function RegisterPage() {
 
   const [formData, setFormData] = useState({
     species_id: '',
-    weight: '0',
-    length: '0',
+    weight: '',
+    length: '',
     lure_id: '',
     location: '',
     notes: '',
@@ -286,8 +286,16 @@ export default function RegisterPage() {
       return;
     }
 
-    if ((!formData.species_id && !speciesQuery.trim()) || !formData.weight) {
-      toast({ title: 'Campos obrigatórios', description: 'Preencha a espécie e o peso.', variant: 'destructive' });
+    if (!speciesQuery.trim()) {
+      toast({ title: 'Campo obrigatório', description: 'Informe a espécie de peixe.', variant: 'destructive' });
+      return;
+    }
+    if (!lureQuery.trim()) {
+      toast({ title: 'Campo obrigatório', description: 'Informe a isca utilizada.', variant: 'destructive' });
+      return;
+    }
+    if (!formData.location.trim()) {
+      toast({ title: 'Campo obrigatório', description: 'Informe o local da pesca.', variant: 'destructive' });
       return;
     }
 
@@ -321,7 +329,7 @@ export default function RegisterPage() {
         user_id: userId,
         species_id: formData.species_id || null,
         species_name: selectedSpecies?.name ?? speciesQuery.trim(),
-        weight: parseFloat(formData.weight),
+        weight: formData.weight ? parseFloat(formData.weight) : null,
         length: formData.length ? parseFloat(formData.length) : null,
         lure_id: formData.lure_id || null,
         bait_description: selectedLure?.name ?? lureQuery.trim(),
@@ -341,7 +349,7 @@ export default function RegisterPage() {
       toast({ title: 'Captura registrada!', description: 'Sua pesca foi salva com sucesso.' });
       setFormData({
         species_id: '',
-        weight: '0',
+        weight: '',
         length: '',
         lure_id: '',
         location: '',
@@ -379,7 +387,7 @@ export default function RegisterPage() {
           >
             <div>
               <Label className="mb-2 block text-sm font-semibold">
-                Espécie de Peixe
+                Espécie de Peixe<span className="text-red-500 ml-0.5">*</span>
               </Label>
               <div ref={speciesRef} className="relative">
                 <input
@@ -418,7 +426,7 @@ export default function RegisterPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className="mb-2 block text-sm font-semibold">
-                  Peso (kg)
+                  Peso (kg) <span className="text-muted-foreground font-normal text-xs">(opcional)</span>
                 </Label>
                 <Input
                   type="number"
@@ -435,7 +443,7 @@ export default function RegisterPage() {
 
               <div>
                 <Label className="mb-2 block text-sm font-semibold">
-                  Comprimento (cm)
+                  Comprimento (cm) <span className="text-muted-foreground font-normal text-xs">(opcional)</span>
                 </Label>
                 <Input
                   type="number"
@@ -452,7 +460,7 @@ export default function RegisterPage() {
 
             <div>
               <Label className="mb-2 block text-sm font-semibold">
-                Isca Utilizada
+                Isca Utilizada<span className="text-red-500 ml-0.5">*</span>
               </Label>
               <div ref={lureRef} className="relative">
                 <input
@@ -490,7 +498,7 @@ export default function RegisterPage() {
 
             <div>
               <Label className="mb-2 block text-sm font-semibold">
-                Local da Pesca
+                Local da Pesca<span className="text-red-500 ml-0.5">*</span>
               </Label>
               <div ref={locationRef} className="relative">
                 <div className="flex items-stretch gap-2">
