@@ -189,7 +189,7 @@ export default function MapPage() {
         console.error('Erro ao buscar capturas:', error);
         return;
       }
-      setCatches((data ?? []).map(dbCatchToCatch));
+      setCatches((data as unknown as CatchRow[]).map(dbCatchToCatch));
     }
 
     fetchCatches();
