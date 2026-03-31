@@ -118,7 +118,10 @@ export default function FishCard({ catchData }: FishCardProps) {
         </div>
 
         {catchData.notes && (
-          <p className="text-sm text-foreground">{catchData.notes}</p>
+          <div className="rounded-xl bg-muted/50 px-3 py-2.5 space-y-1">
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Notas</span>
+            <p className="text-sm text-foreground">{catchData.notes}</p>
+          </div>
         )}
       </div>
     </motion.div>
