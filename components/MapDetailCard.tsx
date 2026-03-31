@@ -82,16 +82,6 @@ export default function MapDetailCard({ data, type, onClose }: MapDetailCardProp
     >
       <div className="p-4 max-h-screen overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold">{catchData.species}</h3>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="space-y-3">
           <div className="flex items-center gap-2">
             <UserAvatar user={catchData.user} size="md" />
             <div>
@@ -101,6 +91,16 @@ export default function MapDetailCard({ data, type, onClose }: MapDetailCardProp
               </p>
             </div>
           </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="space-y-3">
+          <h3 className="text-lg font-bold">{catchData.species}</h3>
 
           <div className="bg-accent/10 rounded-xl p-3 space-y-2">
             <div className="flex justify-between">
