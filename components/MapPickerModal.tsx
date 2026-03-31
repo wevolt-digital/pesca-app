@@ -5,6 +5,7 @@ import maplibregl from 'maplibre-gl';
 import { MAP_STYLE } from '@/lib/mapStyle';
 import { Loader2, MapPin, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { shortLocationName } from '@/lib/utils';
 
 interface MapPickerModalProps {
   initialCoords?: { lat: number; lng: number } | null;
@@ -64,8 +65,8 @@ export default function MapPickerModal({ initialCoords, onConfirm, onClose }: Ma
         headers: { 'Accept-Language': 'pt-BR,pt;q=0.9' },
       });
       const data = await res.json();
-      const name: string = data.display_name ?? `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-      onConfirm({ lat, lng }, name);
+      const fullName: string = data.display_name ?? `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+      onConfirm({ lat, lng }, shortLocationName(fullName));
     } catch {
       onConfirm({ lat, lng }, `${lat.toFixed(5)}, ${lng.toFixed(5)}`);
     } finally {

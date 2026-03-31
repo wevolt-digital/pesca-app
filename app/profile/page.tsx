@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { User, Trophy, Fish, Zap, MapPin, Shield } from 'lucide-react';
+import { shortLocationName } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import StatsCard from '@/components/StatsCard';
@@ -169,7 +170,7 @@ export default function ProfilePage() {
                 <div className="p-4 flex items-center justify-between">
                   <div>
                     <p className="font-semibold text-foreground">{c.species_name}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{c.location_name}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{shortLocationName(c.location_name)}</p>
                     <p className="text-xs text-muted-foreground">
                       {new Date(c.caught_at).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>

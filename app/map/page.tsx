@@ -11,6 +11,7 @@ import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { motion } from 'framer-motion';
 import { MapPin } from 'lucide-react';
 import { MAP_STYLE } from '@/lib/mapStyle';
+import { shortLocationName } from '@/lib/utils';
 
 const defaultCenter: [number, number] = [-47.8919, -15.7975];
 
@@ -26,17 +27,14 @@ interface CatchRow {
   location_name: string;
   bait_description: string;
   caught_at: string;
+  profiles: {
+    id: string;
+    name: string;
+    username: string | null;
+    avatar_url: string | null;
+  } | null;
 }
 
-const STUB_USER = {
-  id: 'unknown',
-  name: 'Pescador',
-  username: 'pescador',
-  avatar: 'https://placehold.co/40x40',
-  totalCatches: 0,
-  totalSpots: 0,
-  joinedDate: '',
-};
 
 interface SpotRow {
   id: string;
@@ -61,7 +59,7 @@ function dbSpotToFishingSpot(row: SpotRow): FishingSpot {
     rating: row.rating,
     totalCatches: row.total_catches,
     description: row.description ?? undefined,
-    addedBy: STUB_USER,
+    addedBy: { id: '', name: '', username: '', avatar: '', totalCatches: 0, totalSpots: 0, joinedDate: '' },
     photos: row.photos ?? [],
   };
 }
@@ -69,11 +67,19 @@ function dbSpotToFishingSpot(row: SpotRow): FishingSpot {
 function dbCatchToCatch(row: CatchRow): Catch {
   return {
     id: row.id,
-    user: STUB_USER,
+    user: {
+      id: row.profiles?.id ?? '',
+      name: row.profiles?.name ?? 'Pescador',
+      username: row.profiles?.username ?? '',
+      avatar: row.profiles?.avatar_url ?? '',
+      totalCatches: 0,
+      totalSpots: 0,
+      joinedDate: '',
+    },
     species: row.species_name,
     weight: row.weight,
     bait: row.bait_description,
-    location: { lat: row.lat, lng: row.lng, name: row.location_name },
+    location: { lat: row.lat, lng: row.lng, name: shortLocationName(row.location_name) },
     photo: '',
     date: row.caught_at,
     likes: 0,
@@ -178,7 +184,7 @@ export default function MapPage() {
     async function fetchCatches() {
       const { data, error } = await supabase
         .from('catches')
-        .select('id, lat, lng, species_name, weight, location_name, bait_description, caught_at');
+        .select('id, lat, lng, species_name, weight, location_name, bait_description, caught_at, profiles!catches_user_id_fkey ( id, name, username, avatar_url )');
       if (error) {
         console.error('Erro ao buscar capturas:', error);
         return;

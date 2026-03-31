@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { Catch } from '@/types';
 import UserAvatar from './UserAvatar';
 import { Heart, MessageCircle, MapPin, Scale, Ruler, Fish, Star } from 'lucide-react';
+import { shortLocationName } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 
@@ -113,7 +114,7 @@ export default function FishCard({ catchData }: FishCardProps) {
 
         <div className="flex items-start gap-2 text-sm text-muted-foreground">
           <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-secondary" />
-          <span>{catchData.location.name}</span>
+          <span>{shortLocationName(catchData.location.name)}</span>
         </div>
 
         {catchData.notes && (

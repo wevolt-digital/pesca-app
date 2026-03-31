@@ -4,7 +4,6 @@ import { FishingSpot, Catch } from '@/types';
 import UserAvatar from './UserAvatar';
 import { MapPin, Star, Fish, X } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
 
 interface MapDetailCardProps {
   data: FishingSpot | Catch;
@@ -132,9 +131,6 @@ export default function MapDetailCard({ data, type, onClose }: MapDetailCardProp
             <p className="text-sm text-foreground italic">{catchData.notes}</p>
           )}
 
-          <Button className="w-full mt-4 bg-primary text-white">
-            Ver Post Completo
-          </Button>
         </div>
       </div>
     </motion.div>

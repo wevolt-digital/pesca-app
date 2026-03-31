@@ -12,6 +12,7 @@ import ImageCropModal from '@/components/ImageCropModal';
 import { Camera, Fish, Loader2, Map, MapPin, Navigation } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import { shortLocationName } from '@/lib/utils';
 
 interface NominatimResult {
   place_id: number;
@@ -185,7 +186,8 @@ export default function RegisterPage() {
             headers: { 'Accept-Language': 'pt-BR,pt;q=0.9' },
           });
           const data = await res.json();
-          const name: string = data.display_name ?? `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+          const fullName: string = data.display_name ?? `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+          const name = shortLocationName(fullName);
           setLocationQuery(name);
           setCoordinates({ lat: latitude, lng: longitude });
           setFormData((prev) => ({ ...prev, location: name }));
