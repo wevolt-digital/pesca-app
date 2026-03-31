@@ -576,7 +576,7 @@ export default function RegisterPage() {
 
             <div>
               <Label className="mb-2 block text-sm font-semibold">
-                Foto (opcional)
+                Foto <span className="text-muted-foreground font-normal text-xs">(opcional)</span>
               </Label>
               <input
                 ref={photoInputRef}
@@ -627,7 +627,7 @@ export default function RegisterPage() {
 
             <div>
               <Label className="mb-2 block text-sm font-semibold">
-                Notas (opcional)
+                Notas <span className="text-muted-foreground font-normal text-xs">(opcional)</span>
               </Label>
               <Textarea
                 name="notes"
@@ -638,6 +638,10 @@ export default function RegisterPage() {
                 rows={4}
               />
             </div>
+
+            <p className="text-xs text-muted-foreground">
+              <span className="text-red-500">*</span> Campo obrigatório
+            </p>
           </motion.div>
 
           <motion.div
