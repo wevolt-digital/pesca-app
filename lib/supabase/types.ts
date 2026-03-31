@@ -3,6 +3,7 @@
 
 export type SpotType = 'river' | 'lake' | 'ocean' | 'reservoir' | 'fishery'
 export type LureType = 'artificial' | 'natural' | 'fly' | 'jig' | 'other'
+export type UserRole = 'user' | 'admin'
 
 export interface Database {
   __InternalSupabase: {
@@ -17,6 +18,7 @@ export interface Database {
           name: string
           avatar_url: string | null
           bio: string | null
+          role: UserRole
           created_at: string
           updated_at: string
         }
@@ -26,6 +28,7 @@ export interface Database {
           name: string
           avatar_url?: string | null
           bio?: string | null
+          role?: UserRole
           created_at?: string
           updated_at?: string
         }
@@ -34,6 +37,7 @@ export interface Database {
           name?: string
           avatar_url?: string | null
           bio?: string | null
+          role?: UserRole
           updated_at?: string
         }
         Relationships: []
@@ -146,6 +150,9 @@ export interface Database {
           caught_at: string
           likes_count: number
           comments_count: number
+          is_promoted: boolean
+          promoted_by: string | null
+          promoted_at: string | null
           created_at: string
           updated_at: string
         }
@@ -186,6 +193,9 @@ export interface Database {
           caught_at?: string
           likes_count?: number
           comments_count?: number
+          is_promoted?: boolean
+          promoted_by?: string | null
+          promoted_at?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -200,6 +210,7 @@ export interface Database {
     Enums: {
       spot_type: SpotType
       lure_type: LureType
+      user_role: UserRole
     }
   }
 }

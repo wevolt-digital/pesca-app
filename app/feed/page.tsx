@@ -22,6 +22,9 @@ interface CatchRow {
   caught_at: string;
   likes_count: number;
   comments_count: number;
+  is_promoted: boolean;
+  promoted_by: string | null;
+  promoted_at: string | null;
   profiles: {
     id: string;
     name: string;
@@ -52,6 +55,9 @@ function rowToCatch(row: CatchRow): Catch {
     date: row.caught_at,
     likes: row.likes_count,
     comments: row.comments_count,
+    isPromoted: row.is_promoted,
+    promotedBy: row.promoted_by ?? undefined,
+    promotedAt: row.promoted_at ?? undefined,
   };
 }
 
@@ -68,8 +74,10 @@ export default function FeedPage() {
           id, species_name, weight, length, bait_description,
           lat, lng, location_name, photo_url, notes, caught_at,
           likes_count, comments_count,
+          is_promoted, promoted_by, promoted_at,
           profiles!catches_user_id_fkey ( id, name, username, avatar_url )
         `)
+        .order('is_promoted', { ascending: false })
         .order('caught_at', { ascending: false });
 
       if (error) {

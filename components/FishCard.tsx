@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { Catch } from '@/types';
 import UserAvatar from './UserAvatar';
-import { Heart, MessageCircle, MapPin, Scale, Ruler, Fish } from 'lucide-react';
+import { Heart, MessageCircle, MapPin, Scale, Ruler, Fish, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 
@@ -30,6 +30,13 @@ export default function FishCard({ catchData }: FishCardProps) {
       animate={{ opacity: 1, y: 0 }}
       className="bg-white rounded-2xl shadow-md overflow-hidden"
     >
+      {catchData.isPromoted && (
+        <div className="flex items-center gap-1.5 px-4 py-1.5 bg-amber-400 text-amber-900">
+          <Star className="w-3.5 h-3.5 fill-amber-900" />
+          <span className="text-xs font-semibold tracking-wide uppercase">Destaque</span>
+        </div>
+      )}
+
       <div className="p-4 flex items-center gap-3">
         <UserAvatar user={catchData.user} size="md" />
         <div className="flex-1">

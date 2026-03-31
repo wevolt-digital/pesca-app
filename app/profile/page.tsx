@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, Trophy, Fish, Zap, MapPin } from 'lucide-react';
+import Link from 'next/link';
+import { User, Trophy, Fish, Zap, MapPin, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import StatsCard from '@/components/StatsCard';
@@ -15,6 +16,7 @@ interface Profile {
   username: string;
   avatar_url: string | null;
   bio: string | null;
+  role?: string;
 }
 
 interface CatchRow {
@@ -40,7 +42,7 @@ export default function ProfilePage() {
       if (!user) { router.replace('/'); return; }
 
       const [{ data: prof }, { data: catchRows }] = await Promise.all([
-        supabase.from('profiles').select('id, name, username, avatar_url, bio').eq('id', user.id).single(),
+        supabase.from('profiles').select('id, name, username, avatar_url, bio, role').eq('id', user.id).single(),
         supabase.from('catches').select('id, species_name, weight, location_name, bait_description, caught_at, photo_url').eq('user_id', user.id).order('caught_at', { ascending: false }),
       ]);
 
@@ -94,9 +96,20 @@ export default function ProfilePage() {
                 {profile?.bio && <p className="text-sm text-foreground mt-2">{profile.bio}</p>}
               </div>
             </div>
-            <Button className="bg-primary text-white rounded-xl" onClick={() => router.push('/profile/edit')}>
-              Editar Perfil
-            </Button>
+            <div className="flex flex-col items-end gap-2">
+              <Button className="bg-primary text-white rounded-xl" onClick={() => router.push('/profile/edit')}>
+                Editar Perfil
+              </Button>
+              {profile?.role === 'admin' && (
+                <Link
+                  href="/admin"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+                >
+                  <Shield className="w-3.5 h-3.5" />
+                  Painel Admin
+                </Link>
+              )}
+            </div>
           </div>
         </motion.div>
 

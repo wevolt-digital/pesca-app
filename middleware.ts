@@ -2,12 +2,15 @@ import { createServerClient } from '@supabase/ssr';
 import { NextRequest, NextResponse } from 'next/server';
 
 const PROTECTED_ROUTES = ['/map', '/feed', '/discover', '/register', '/profile', '/onboarding'];
+const ADMIN_ROUTES = ['/admin'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isProtected = PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
-  if (!isProtected) return NextResponse.next();
+  const isAdmin = ADMIN_ROUTES.some((route) => pathname.startsWith(route));
+
+  if (!isProtected && !isAdmin) return NextResponse.next();
 
   let response = NextResponse.next({ request });
 
@@ -34,6 +37,18 @@ export async function middleware(request: NextRequest) {
 
   if (!user) {
     return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  if (isAdmin) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (profile?.role !== 'admin') {
+      return NextResponse.redirect(new URL('/feed', request.url));
+    }
   }
 
   return response;

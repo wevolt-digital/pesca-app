@@ -1,9 +1,12 @@
+export type UserRole = 'user' | 'admin';
+
 export interface User {
   id: string;
   name: string;
   username: string;
   avatar: string;
   bio?: string;
+  role?: UserRole;
   totalCatches: number;
   totalSpots: number;
   joinedDate: string;
@@ -44,6 +47,9 @@ export interface Catch {
   likes: number;
   comments: number;
   isLiked?: boolean;
+  isPromoted?: boolean;
+  promotedBy?: string;
+  promotedAt?: string;
 }
 
 export interface FishSpecies {
