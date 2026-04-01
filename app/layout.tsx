@@ -9,23 +9,44 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Fishintel - Inteligência de Pesca',
+  metadataBase: new URL('https://fishintel.com.br'),
+  title: {
+    default: 'Fishintel — Inteligência de Pesca',
+    template: '%s | Fishintel',
+  },
   description:
-    'Plataforma colaborativa para pescadores brasileiros. Registre suas pescas, descubra novos pontos e conecte-se com outros pescadores.',
+    'Registre capturas, descubra pontos de pesca e conecte-se com pescadores de todo o Brasil.',
+  keywords: ['pesca', 'pescaria', 'pontos de pesca', 'captura', 'pescadores', 'fishintel'],
+  robots: {
+    index: true,
+    follow: true,
+  },
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
+    type: 'website',
+    locale: 'pt_BR',
+    url: '/',
+    siteName: 'Fishintel',
+    title: 'Fishintel — Inteligência de Pesca',
+    description:
+      'Registre capturas, descubra pontos de pesca e conecte-se com pescadores de todo o Brasil.',
     images: [
       {
-        url: 'https://bolt.new/static/og_default.png',
+        url: '/thumb-fishintel.webp',
+        width: 1200,
+        height: 630,
+        alt: 'Fishintel — Inteligência de Pesca',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    images: [
-      {
-        url: 'https://bolt.new/static/og_default.png',
-      },
-    ],
+    title: 'Fishintel — Inteligência de Pesca',
+    description:
+      'Registre capturas, descubra pontos de pesca e conecte-se com pescadores de todo o Brasil.',
+    images: ['/thumb-fishintel.webp'],
   },
 };
 
