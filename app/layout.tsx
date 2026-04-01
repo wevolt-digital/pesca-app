@@ -1,6 +1,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import Script from 'next/script';
 import MobileNav from '@/components/MobileNav';
 import ReportButton from '@/components/ReportButton';
 import { Toaster } from '@/components/ui/toaster';
@@ -20,7 +21,8 @@ export const metadata: Metadata = {
     'pesca', 'pescaria', 'pontos de pesca', 'captura', 'pescadores', 'fishintel',
     'pesca esportiva', 'pesca amadora', 'pesca de rio', 'pesca de lago', 'pesca em represa', 'fly fishing', 'pesca com isca artificial',
     'app de pesca', 'diário de pesca', 'mapa de pesca', 'registro de pesca', 'comunidade de pescadores', 'spots de pesca',
-    'pesca no Brasil', 'pesca Pantanal', 'pesca Amazônia', 'pesca em rios',
+    'pesca no Brasil', 'pesca Pantanal', 'pesca Amazônia', 'pesca em rios', 'pescaria de tucunaré', 'pescaria de robalo', 'melhores pesqueiros',
+    'pescaria de caiaque', 'pesca oceanica',
   ],
   robots: {
     index: true,
@@ -62,6 +64,20 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
+      <head>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-X72HBFGNHJ"
+          strategy="afterInteractive"
+        />
+        <Script id="gtag-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-X72HBFGNHJ');
+          `}
+        </Script>
+      </head>
       <body className={inter.className}>
         <main className="pb-24 md:pb-0">{children}</main>
         <MobileNav />
