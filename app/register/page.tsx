@@ -205,31 +205,15 @@ export default function RegisterPage() {
     );
   };
 
-  // DEV ONLY: sign-in automático com usuário de teste se não houver sessão ativa
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
 
-    async function devSignIn() {
+    async function loadSession() {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        setUserId(session.user.id);
-        return;
-      }
-
-      if (process.env.NODE_ENV !== 'development') return;
-
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: process.env.NEXT_PUBLIC_DEV_TEST_EMAIL!,
-        password: process.env.NEXT_PUBLIC_DEV_TEST_PASSWORD!,
-      });
-      if (error) {
-        console.error('Dev sign-in falhou:', error.message);
-      } else {
-        setUserId(data.user.id);
-      }
+      if (session) setUserId(session.user.id);
     }
 
-    devSignIn();
+    loadSession();
   }, []);
 
   useEffect(() => {

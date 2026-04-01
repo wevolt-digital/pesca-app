@@ -40,15 +40,7 @@ export default function EditProfilePage() {
     async function init() {
       let session = (await supabase.auth.getSession()).data.session;
 
-      if (!session && process.env.NODE_ENV === 'development') {
-        const { data } = await supabase.auth.signInWithPassword({
-          email: process.env.NEXT_PUBLIC_DEV_TEST_EMAIL!,
-          password: process.env.NEXT_PUBLIC_DEV_TEST_PASSWORD!,
-        });
-        session = data.session;
-      }
-
-      if (!session) {
+if (!session) {
         setLoading(false);
         return;
       }
