@@ -16,7 +16,12 @@ export const metadata: Metadata = {
   },
   description:
     'Registre capturas, descubra pontos de pesca e conecte-se com pescadores de todo o Brasil.',
-  keywords: ['pesca', 'pescaria', 'pontos de pesca', 'captura', 'pescadores', 'fishintel'],
+  keywords: [
+    'pesca', 'pescaria', 'pontos de pesca', 'captura', 'pescadores', 'fishintel',
+    'pesca esportiva', 'pesca amadora', 'pesca de rio', 'pesca de lago', 'pesca em represa', 'fly fishing', 'pesca com isca artificial',
+    'app de pesca', 'diário de pesca', 'mapa de pesca', 'registro de pesca', 'comunidade de pescadores', 'spots de pesca',
+    'pesca no Brasil', 'pesca Pantanal', 'pesca Amazônia', 'pesca em rios',
+  ],
   robots: {
     index: true,
     follow: true,
